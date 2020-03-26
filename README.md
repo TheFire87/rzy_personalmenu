@@ -5,6 +5,7 @@
 - **You are not allowed to modify the resource name**
 - **You are not allowed to modify the repository and re-release it, you can only fork it**
 - **If you want to contribute (like translation) you can make a pull request or open a new issue**
+
 **Please, KEEP IN MIND i've done this to train myself in Lua. Cuse tbh if I had in idea to release it only, it would be dumb cuse krz_personalmenu do the same job.**
 
 ### Links & Support
