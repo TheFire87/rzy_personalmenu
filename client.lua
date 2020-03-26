@@ -270,7 +270,6 @@ function AddPersoMenu(menu)
 			animsActionScenario("WORLD_HUMAN_JOG_STANDING")
 		elseif item == pompes then
 			animsActionScenario("WORLD_HUMAN_PUSH_UPS")
-
 		end
 	end
 	-------------------FESTIVES
@@ -318,7 +317,6 @@ function AddPersoMenu(menu)
 			startAnim("amb@world_human_bum_standing@drunk@idle_a", "idle_a")
 		elseif item == airshagging then
 			startAnim("anim@mp_player_intcelebrationfemale@air_shagging", "air_shagging")
-
 		end
 	end
 
@@ -356,8 +354,6 @@ function AddPersoMenu(menu)
 			startAnim("mp_ped_interaction", "hugs_guy_a")
 		elseif item == milisalut then
 			startAnim("mp_player_int_uppersalute", "mp_player_int_salute")
-
-
 		end
 	end
 	-----------------------------------------TRAVAIL
@@ -416,7 +412,6 @@ function AddPersoMenu(menu)
 			animsActionScenario("WORLD_HUMAN_CLIPBOARD")
 		elseif item == sdf then
 			animsActionScenario("WORLD_HUMAN_BUM_FREEWAY")
-
 		end
 	end
 	------------------------------HUMEURS
@@ -631,14 +626,15 @@ function AddPersoMenu(menu)
 
 
     ------------------------ inventaire
+    local invCount = nil
     for x=1, #ESX.PlayerData.inventory, 1 do
         local count = ESX.PlayerData.inventory[x].count
         if count > 0 then
-            local invCount = {}
+            invCount = {}
             local label = ESX.PlayerData.inventory[x].label
             local value = ESX.PlayerData.inventory[x].name
             for x = 1, count, 1 do
-                table.insert(invCount, i)
+                table.insert(invCount, x)
             end
 
             iteminventaire[value] = NativeUI.CreateListItem(label .. " (" .. count .. ")", invCount, 1)
@@ -658,6 +654,7 @@ function AddPersoMenu(menu)
 
 	local retourmenu = NativeUI.CreateItem('Retour', "Retourne au menu précédent")
 	menuiteminv:AddItem(retourmenu)
+
 
 	menuinventaire.SubMenu.OnListSelect = function(sender, item, index)
 		_menuPool:CloseAllMenus(true)
@@ -687,15 +684,15 @@ function AddPersoMenu(menu)
 
 						if playertrouve == true then
 							local pedproche = GetPlayerPed(closestPlayer)
-								if quantity ~= nil and count > 0 then
-									TriggerServerEvent('esx:giveInventoryItem', GetPlayerServerId(closestPlayer), 'item_standard', value, quantity)
-									_menuPool:CloseAllMenus()
-								else
-									ESX.ShowNotification('Montant invalide !')
-								end
+							if quantity ~= nil and count > 0 then
+								TriggerServerEvent('esx:giveInventoryItem', GetPlayerServerId(closestPlayer), 'item_standard', value, quantity)
+								_menuPool:CloseAllMenus()
 							else
-								ESX.ShowNotification('Il n\'y a personne aux alentours !')
+								ESX.ShowNotification('Montant invalide !')
 							end
+						else
+							ESX.ShowNotification('Il n\'y a personne aux alentours !')
+						end
 						elseif item == jeteritem then
 							TriggerServerEvent('esx:removeInventoryItem', 'item_standard', value, quantity)
 							_menuPool:CloseAllMenus()
@@ -709,6 +706,9 @@ function AddPersoMenu(menu)
 		    	end
 			end
 		end
+	end
+	
+
 
     -----------------armes
     for i = 1, #ESX.GetWeaponList, 1 do
@@ -774,6 +774,7 @@ function AddPersoMenu(menu)
 			end
 		end
 	end
+
 
 	--------------------portefeuille
 
@@ -1001,7 +1002,7 @@ function AddPersoMenu(menu)
             TriggerEvent('RiZiePersoMenu:access', "Helmet")
         end
     end
-end
+
     --
 end
 
@@ -1296,7 +1297,7 @@ Citizen.CreateThread(function()
     while true do
         Citizen.Wait(0)
 
-        if IsControlJustPressed(0,166) then  -- 166   = F5
+        if IsControlJustPressed(0,51) then  -- 166   = F5
             ESX.PlayerData = ESX.GetPlayerData()
 
             CreationMenu()
