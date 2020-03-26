@@ -481,7 +481,6 @@ function AddPersoMenu(menu)
 	local business = NativeUI.CreateItem('Business', "")
 	demarcheMenu.SubMenu:AddItem(business)
 
-
 	local intimide = NativeUI.CreateItem('Intimide', "")
 	demarcheMenu.SubMenu:AddItem(intimide)
 
@@ -639,7 +638,7 @@ function AddPersoMenu(menu)
             local label = ESX.PlayerData.inventory[x].label
             local value = ESX.PlayerData.inventory[x].name
             for x = 1, count, 1 do
-                invCount = tonumber(invCount) + 1
+                table.insert(invCount, i)
             end
 
             iteminventaire[value] = NativeUI.CreateListItem(label .. " (" .. count .. ")", invCount, 1)
@@ -952,8 +951,6 @@ function AddPersoMenu(menu)
         elseif item == porter then
         	TriggerEvent('RiZiePersoMenu:porter')
         	_menuPool:CloseAllMenus()
-        elseif item == otage then
-        	ExecuteCommand('takehostage') -- si vous avez changé la commande, veuillez la changer ici aussi
         end
     end
     
@@ -1004,6 +1001,7 @@ function AddPersoMenu(menu)
             TriggerEvent('RiZiePersoMenu:access', "Helmet")
         end
     end
+end
     --
 end
 
