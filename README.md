@@ -9,9 +9,6 @@
 ### Links & Support
 - **Discord Username**: RZY#2004
 
-### Screenshot
-
-![screenshot](https://i.imgur.com/mgweNTc.png)
 
 ### Features
 - NativeUI
