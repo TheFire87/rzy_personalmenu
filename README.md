@@ -47,7 +47,7 @@
 ### Requirements
 This order also applies in the startup order.
 
-- [es_extended](https://github.com/ESX-Org/es_extended **Double job one is better**
+- [es_extended](https://github.com/ESX-Org/es_extended) **Double job one is better**
 - [esx_addonaccount](https://github.com/ESX-Org/esx_addonaccount)
 - [esx_addoninventory](https://github.com/ESX-Org/esx_addoninventory)
 - [esx_datastore](https://github.com/ESX-Org/esx_datastore)
