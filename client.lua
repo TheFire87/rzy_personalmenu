@@ -25,6 +25,7 @@ _menuPool = nil
 
 
 Player = {
+	menuopen = false,
     vethaut = true,
     vetbas = true,
     vetch = true,
@@ -1540,21 +1541,26 @@ end)
 ----------------------------------------------------------------------------
 
 function CreationMenu()
-    AddPersoMenu(menuperso)
-    _menuPool:RefreshIndex()
+	AddPersoMenu(menuperso)
+	_menuPool:RefreshIndex()
 end
 
 Citizen.CreateThread(function()
     while true do
         Citizen.Wait(0)
+	    if IsControlJustPressed(0,166) then  -- 166   = F5
+	    	-- on évite la dupli des menus si le joueur essaies de l'open  alors qu'il est déjà open
+	    	menuperso:Clear()
+           	menuarmeitem:Clear()
+           	menuiteminv:Clear()
+	        _menuPool:CloseAllMenus(true)
+	        --
 
-        if IsControlJustPressed(0,166) then  -- 166   = F5
-            ESX.PlayerData = ESX.GetPlayerData()
-
-            CreationMenu()
-            menuperso:Visible(not menuperso:Visible())
-            Citizen.Wait(10)
-        end
+	        ESX.PlayerData = ESX.GetPlayerData()
+	        CreationMenu()
+	        menuperso:Visible(not menuperso:Visible())
+	        Citizen.Wait(10)
+	    end
     end
 end)
 
@@ -1576,10 +1582,6 @@ Citizen.CreateThread(function()
             Citizen.Wait(0)
 
             if not _menuPool:IsAnyMenuOpen() then
-                menuperso:Clear()
-                menuarmeitem:Clear()
-                menuiteminv:Clear()
-
                 _menuPool:CloseAllMenus(true)
 
                 iteminventaire = {}
@@ -1592,9 +1594,8 @@ Citizen.CreateThread(function()
                 menuiteminv = NativeUI.CreateMenu(GetPlayerName(PlayerId()), "Action Item")
                 menuperso = NativeUI.CreateMenu(GetPlayerName(PlayerId()), Config.NomServer)
                 _menuPool:Add(menuperso)
-				_menuPool:Add(menuarmeitem)
-				_menuPool:Add(menuiteminv)
-
+		_menuPool:Add(menuarmeitem)
+		_menuPool:Add(menuiteminv)
             end
         end
         Citizen.Wait(0)
