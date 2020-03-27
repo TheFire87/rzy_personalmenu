@@ -29,19 +29,31 @@
     - License's (driver et weapon), Identity Card
 - Bills
 - Clothing
-- Accessories
+    - clothes
+    - Accessories
 - Animations
 - Procedures
 - Enterprise management
 - Gang management (if double job enabled into the config)
-- Diver:
-    - Carry
-    - Sleep
-    - Enabled/or disable minimap
+- Various:
+    - Gang Actions
+        - Handcuff someone
+        - Kidnap someone
+        - Take out of the vehicle someone
+        - Put someone into a vehicle
+    - Citizen Action
+        - Sleep
+        - Carry
+    - Options
+        - Change voice
+        - Enable/disable minimap
+        - Save ped
+    - Infos:
+        - See how much peoples are online, how much EMS, LSPD, mechanic and cardealer are online's too
+    
 
 ### Credits / Thanks
 - Korioz for:
-    - Inspiration
     - Idea
     - Démarches
     - KeyboardInput function
