@@ -1536,7 +1536,7 @@ Citizen.CreateThread(function()
     while true do
         Citizen.Wait(0)
 
-        if IsControlJustPressed(0,51) then  -- 166   = F5
+        if IsControlJustPressed(0,166) then  -- 166   = F5
             ESX.PlayerData = ESX.GetPlayerData()
 
             CreationMenu()
