@@ -37,7 +37,10 @@ Player = {
     -----
     ragdoll = false,
     porter = false,
-    minimap = true
+    minimap = true,
+    voixchuchoter = false,
+    voixnormal = true,
+    voixcrier = false
 }
 
 
@@ -73,6 +76,89 @@ AddEventHandler('esx:playerLoaded', function(xPlayer)
     ESX.PlayerData = xPlayer
 end)
 
+RegisterNetEvent('RiZiePersoMenu:kidnapper')
+AddEventHandler('RiZiePersoMenu:kidnapper', function(target)
+  IsDragged = not IsDragged
+  CopPed = tonumber(target)
+end)
+
+RegisterNetEvent('RiZiePersoMenu:sortirvehicule')
+AddEventHandler('RiZiePersoMenu:sortirvehicule', function(target)
+  local ped = GetPlayerPed(target)
+  ClearPedTasksImmediately(ped)
+  plyPos = GetEntityCoords(GetPlayerPed(-1),  true)
+  local xnew = plyPos.x+2
+  local ynew = plyPos.y+2
+
+  SetEntityCoords(GetPlayerPed(-1), xnew, ynew, plyPos.z)
+end)
+
+RegisterNetEvent('RiZiePersoMenu:mettrevehicule')
+AddEventHandler('RiZiePersoMenu:mettrevehicule', function()
+
+  local playerPed = GetPlayerPed(-1)
+  local coords = GetEntityCoords(playerPed)
+
+  if IsAnyVehicleNearPoint(coords.x, coords.y, coords.z, 5.0) then
+
+    local vehicle = GetClosestVehicle(coords.x,  coords.y,  coords.z,  5.0,  0,  71)
+
+    if DoesEntityExist(vehicle) then
+
+      local maxSeats = GetVehicleMaxNumberOfPassengers(vehicle)
+      local freeSeat = nil
+
+      for i=maxSeats - 1, 0, -1 do
+        if IsVehicleSeatFree(vehicle,  i) then
+          freeSeat = i
+          break
+        end
+      end
+
+      if freeSeat ~= nil then
+        TaskWarpPedIntoVehicle(playerPed,  vehicle,  freeSeat)
+      end
+
+    end
+
+  end
+
+end)
+
+
+RegisterNetEvent('RiZiePersoMenu:menotter')
+AddEventHandler('RiZiePersoMenu:menotter', function()
+
+  IsHandcuffed    = not IsHandcuffed;
+  local playerPed = GetPlayerPed(-1)
+
+  Citizen.CreateThread(function()
+
+    if IsHandcuffed then
+
+      RequestAnimDict('mp_arresting')
+
+      while not HasAnimDictLoaded('mp_arresting') do
+        Wait(100)
+      end
+
+      TaskPlayAnim(playerPed, 'mp_arresting', 'idle', 8.0, -8, -1, 49, 0, 0, 0, 0)
+      SetEnableHandcuffs(playerPed, true)
+      SetPedCanPlayGestureAnims(playerPed, false)
+      FreezeEntityPosition(playerPed,  true)
+
+    else
+
+      ClearPedSecondaryTask(playerPed)
+      SetEnableHandcuffs(playerPed, false)
+      SetPedCanPlayGestureAnims(playerPed,  true)
+      FreezeEntityPosition(playerPed, false)
+
+    end
+
+  end)
+end)
+
 function helpnotif(text)
     SetTextComponentFormat('STRING')
     AddTextComponentString(text)
@@ -80,16 +166,18 @@ function helpnotif(text)
 end
 
 function ObtenirJoueur()
-    local joueurs = {}
+    local joueurs = 0
 
     for i = 0, 255 do
         if NetworkIsPlayerActive(i) then
-            table.insert(joueurs, i)
+            joueurs = joueurs + 1
         end
     end
 
     return joueurs
 end
+
+
 
 function JoueurPlusProche(radius)
     local players = ObtenirJoueur()
@@ -115,6 +203,7 @@ function JoueurPlusProche(radius)
 		return nil
 	end
 end
+
 
 -- merci à Korioz pour cette fonction
 function KeyboardInput(entryTitle, textEntry, inputText, maxLength)
@@ -183,8 +272,8 @@ function AddPersoMenu(menu)
     local menuarmes = _menuPool:AddSubMenu(menu, "Armes", "Accédez à vos armes")
     local menuportefeuille = _menuPool:AddSubMenu(menu, "Portefeuille", "Accédez à votre portefeuille")
     local menufacture = _menuPool:AddSubMenu(menu, "Factures", "Accédez à vos factures")
-    local menuvetement = _menuPool:AddSubMenu(menu, "Vêtements", "Enlevez, remettez vos vetements ici")
-    local menuaccessoires = _menuPool:AddSubMenu(menu, "Accessoires", "Enlevez, remettez vos accessoires ici")
+    local menuvetement = _menuPool:AddSubMenu(menu, "Vêtements", "Enlevez, remettez vos vêtements ici")
+    --local menuaccessoires = _menuPool:AddSubMenu(menu, "Accessoires", "Enlevez, remettez vos accessoires ici")
     local menuanim = _menuPool:AddSubMenu(menu, "Animations", "Faites des animations ici")
 
     local menuboss = nil
@@ -249,6 +338,8 @@ function AddPersoMenu(menu)
 
 
     local menudivers = _menuPool:AddSubMenu(menu, "Divers", "Les options diverse")
+
+
 
     -------------------------------ANIMATIOKNS
     --------------Sportives
@@ -551,6 +642,11 @@ function AddPersoMenu(menu)
 	local gangster = NativeUI.CreateItem('Gangster', "")
 	demarcheMenu.SubMenu:AddItem(gangster)
 
+	local franklinenerve = NativeUI.CreateItem('Franklin énervé', "")
+	demarcheMenu.SubMenu:AddItem(franklinenerve)
+
+	local mickaelenerve = NativeUI.CreateItem('Michael énervé', "")
+	demarcheMenu.SubMenu:AddItem(mickaelenerve)
 
 	demarcheMenu.SubMenu.OnItemSelect = function(sender, item, index)
 		if item == normalm then
@@ -621,6 +717,10 @@ function AddPersoMenu(menu)
 			startAttitude("move_m@gangster@ng","move_m@gangster@ng")
 		elseif item == gangster then
 			startAttitude("move_m@gangster@generic","move_m@gangster@generic")
+		elseif item == franklinenerve then
+			startAttitude("move_characters@franklin@fire","move_characters@franklin@fire")
+		elseif item == mickaelenerve then
+			startAttitude("move_characters@michael@fire","move_characters@michael@fire")
 		end
 	end
 
@@ -927,19 +1027,55 @@ function AddPersoMenu(menu)
         end
     end)
 
-    -------------------------MENU DIVERS
 
+    -------------------------MENU DIVERS/MENU GANG
+    if Config.Gangmenu == true then
+	    if ESX.PlayerData.job2.name == "ballas" or ESX.PlayerData.job2.name == "vagos" or ESX.PlayerData.job2.name == "families" then
+		    diversxgangMenu = _menuPool:AddSubMenu(menudivers.SubMenu, "Actions Gang")
+
+		    local menotter = NativeUI.CreateItem("Menotter", "Menotte le joueur le plus proche de toi")
+		    diversxgangMenu.SubMenu:AddItem(menotter)
+
+		    local kidnapper = NativeUI.CreateItem("Kidnapper", "Kidnappe le joueur le plus proche de toi")
+		    diversxgangMenu.SubMenu:AddItem(kidnapper)
+
+		    local mettrevehicle = NativeUI.CreateItem("Mettre de force dans le véhicule", "Mettre de force le joueur le plus proche de toi dans le véhicule")
+		    diversxgangMenu.SubMenu:AddItem(mettrevehicle)
+
+		    local sortirvehicle = NativeUI.CreateItem("Sortir de force du véhicule", "Sortir de force le joueur le plus proche de toi du véhicule")
+		    diversxgangMenu.SubMenu:AddItem(sortirvehicle)
+
+
+		    diversxgangMenu.SubMenu.OnItemSelect = function(sender, item)
+	            local closestPlayer, closestDistance = ESX.Game.GetClosestPlayer()
+				if closestDistance ~= -1 and closestDistance <= 3 and not IsPedInAnyVehicle(GetPlayerPed(GetPlayerFromServerId(closestPlayer)), true) then   	
+			        if item == menotter then
+			            TriggerServerEvent('RiZiePersoMenu:menotter', GetPlayerServerId(closestPlayer))
+			        elseif item == kidnapper then
+			            TriggerServerEvent('RiZiePersoMenu:kidnapper', GetPlayerServerId(closestPlayer))
+			        elseif item == mettrevehicle then
+			            TriggerServerEvent('RiZiePersoMenu:mettrevehicle', GetPlayerServerId(closestPlayer))
+			        elseif item == sortirvehicle then
+			            TriggerServerEvent('RiZiePersoMenu:sortirvehicle', GetPlayerServerId(closestPlayer))
+			        end
+			    else
+			    	ESX.ShowNotification('Il n\'y a personne aux alentours !')
+			    end
+	    	end
+
+		end
+	end
+
+    ---------------------MENU DIVERS/ACTIONS
+    diversxactionMenu = _menuPool:AddSubMenu(menudivers.SubMenu, "Actions Civil")
 
     local porter = NativeUI.CreateCheckboxItem("Porter", Player.porter, "Portes le joueur le plus proche de toi")
-    menudivers.SubMenu:AddItem(porter)
+    diversxactionMenu.SubMenu:AddItem(porter)
 
     local dormir = NativeUI.CreateCheckboxItem("Dormir", Player.ragdoll, "Vous endormir")
-    menudivers.SubMenu:AddItem(dormir)
+    diversxactionMenu.SubMenu:AddItem(dormir)
 
-    local minimap = NativeUI.CreateCheckboxItem("Minimap", Player.minimap, "Afficher ou non la minimap")
-    menudivers.SubMenu:AddItem(minimap)
-
-    menudivers.SubMenu.OnCheckboxChange = function(sender, item, checked_)
+    diversxactionMenu.SubMenu.OnCheckboxChange = function(sender, item, checked_)
         if item == dormir then
             Player.ragdoll = not Player.ragdoll
 
@@ -954,22 +1090,125 @@ function AddPersoMenu(menu)
         	_menuPool:CloseAllMenus()
         end
     end
-    
 
+    ------------------------MENU DIVERS/OPTIONS
+
+    diversxoptionsMenu = _menuPool:AddSubMenu(menudivers.SubMenu, "Options")
+
+	local voixlist = {
+		'Chuchoter',
+		'Normal',
+		'Crier'
+	}
+
+    local minimap = NativeUI.CreateCheckboxItem("Minimap", Player.minimap, "Afficher ou non la minimap")
+    diversxoptionsMenu.SubMenu:AddItem(minimap)
+
+    local sauvegarderperso = NativeUI.CreateItem("Sauvegarder votre Personnage", "Afficher ou non la minimap")
+    diversxoptionsMenu.SubMenu:AddItem(sauvegarderperso)
+
+    local quelindex = 2
+    if Player.voixchuchoter == true then
+    	quelindex = 1
+    elseif Player.voixnormal == true then
+    	quelindex = 2
+    elseif Player.voixcrier == true then
+    	quelindex = 3
+    end
+    local voix = NativeUI.CreateListItem("Voix", voixlist, quelindex, "Changer la distance de parole")
+    diversxoptionsMenu.SubMenu:AddItem(voix)
+
+    diversxoptionsMenu.SubMenu.OnItemSelect = function(sender, item)
+        if item == sauvegarderperso then
+            TriggerEvent('esx_skin:requestSaveSkin', source)
+            Citizen.Wait(500)
+            ESX.ShowNotification('📌Personnage synchronisé.')
+        end
+    end
+
+    diversxoptionsMenu.SubMenu.OnListSelect = function(sender, item, index)
+        if item == voix then
+            if index == 1 then
+	            if not Player.voixchuchoter then
+					NetworkSetTalkerProximity(2.01)
+					Citizen.Wait(250)
+					ESX.ShowNotification("Vous etes maintenant en train de chuchoter !")
+					Player.voixchuchoter, Player.voixnormal, Player.voixcrier = true, false, false
+				else
+					ESX.ShowNotification('Vous etes déjà entrain de chuchoter !')
+				end
+	        elseif index == 2 then
+	        	if not Player.voixnormal then
+					NetworkSetTalkerProximity(8.01)
+					Citizen.Wait(250)
+					ESX.ShowNotification("Vous etes maintenant en train de parler normalement !")
+					Player.voixchuchoter, Player.voixnormal, Player.voixcrier = false, true, false
+				else
+					ESX.ShowNotification('Vous etes déjà entrain de parler normalement !')
+				end
+	        elseif index == 3 then
+				NetworkSetTalkerProximity(15.01)
+				Citizen.Wait(250)
+				ESX.ShowNotification("Vous etes maintenant en train de crier !")
+				Player.voixchuchoter, Player.voixnormal, Player.voixcrier = false, false, true
+				else
+					ESX.ShowNotification('Vous etes déjà entrain de crier !')
+	        end
+        end
+    end
+
+    diversxoptionsMenu.SubMenu.OnCheckboxChange = function(sender, item, checked_)
+        if item == minimap then
+            Player.minimap = not Player.minimap
+            DisplayRadar(Player.minimap)
+        end
+    end
+
+    ---------------------MENU DIVERS/INFOS
+
+    diversxinfosMenu = _menuPool:AddSubMenu(menudivers.SubMenu, "Infos")
+
+	local joueurs = NativeUI.CreateItem("Nombre de joueurs connectés: " .. tostring(ObtenirJoueur()), "")
+	diversxinfosMenu.SubMenu:AddItem(joueurs)
+
+    ESX.TriggerServerCallback('RiZiePersoMenu:policecount', function(keuf)
+    	local keuf = NativeUI.CreateItem("Nombre de policiers connectés: " .. keuf, "")
+		diversxinfosMenu.SubMenu:AddItem(keuf)
+	end)
+
+    ESX.TriggerServerCallback('RiZiePersoMenu:mecanocount', function(mecanos)
+    	local mecanos = NativeUI.CreateItem("Nombre de mécanos connectés: " .. mecanos, "")
+		diversxinfosMenu.SubMenu:AddItem(mecanos)
+	end)
+
+    ESX.TriggerServerCallback('RiZiePersoMenu:concesscount', function(concess)
+    	local concess = NativeUI.CreateItem("Nombre de concessionnaires connectés: " .. concess, "")
+		diversxinfosMenu.SubMenu:AddItem(concess)
+	end)
+
+    ESX.TriggerServerCallback('RiZiePersoMenu:emscount', function(ems)
+    	local ems = NativeUI.CreateItem("Nombre d'EMS connectés: " .. ems, "")
+		diversxinfosMenu.SubMenu:AddItem(ems)
+	end)
+
+    
 
     ---------------------MENU VETEMENTS / ACCESSOIRES
+    vetementxHabit = _menuPool:AddSubMenu(menuvetement.SubMenu, "Habits")
+	vetementxAccessoires = _menuPool:AddSubMenu(menuvetement.SubMenu, "Accessoires")
+
     local hautvet = NativeUI.CreateCheckboxItem("Haut", Player.vethaut, "Enlever ou mettre votre haut")
-    menuvetement.SubMenu:AddItem(hautvet)
+    vetementxHabit.SubMenu:AddItem(hautvet)
     local basvet = NativeUI.CreateCheckboxItem("Bas", Player.vetbas, "Enlever ou mettre votre bas")
-    menuvetement.SubMenu:AddItem(basvet)
+    vetementxHabit.SubMenu:AddItem(basvet)
     local chaussurevet = NativeUI.CreateCheckboxItem("Chaussures", Player.vetch, "Enlever ou mettre vos chaussures")
-    menuvetement.SubMenu:AddItem(chaussurevet)
+    vetementxHabit.SubMenu:AddItem(chaussurevet)
     local sacvet = NativeUI.CreateCheckboxItem("Sac", Player.vetch, "Enlever ou mettre votre sac")
-    menuvetement.SubMenu:AddItem(sacvet)
+    vetementxHabit.SubMenu:AddItem(sacvet)
     local giletparbvet = NativeUI.CreateCheckboxItem("Gillet par Balle", Player.vetch, "Enlever ou mettre votre gilet par balle")
-    menuvetement.SubMenu:AddItem(giletparbvet)
+    vetementxHabit.SubMenu:AddItem(giletparbvet)
     
-    menuvetement.SubMenu.OnCheckboxChange = function(sender, item, checked_)
+    vetementxHabit.SubMenu.OnCheckboxChange = function(sender, item, checked_)
         if item == hautvet then
             TriggerEvent('RiZiePersoMenu:haut')
         elseif item == basvet then
@@ -984,16 +1223,16 @@ function AddPersoMenu(menu)
     end
 
     local accesslunettes = NativeUI.CreateCheckboxItem("Lunettes", Player.vetlunettes, "Enlever ou mettre vos Lunettes")
-    menuaccessoires.SubMenu:AddItem(accesslunettes)
+    vetementxAccessoires.SubMenu:AddItem(accesslunettes)
 
     local accessmasque = NativeUI.CreateCheckboxItem("Masque", Player.vetmasque, "Enlever ou mettre votre Masque")
-    menuaccessoires.SubMenu:AddItem(accessmasque)
+    vetementxAccessoires.SubMenu:AddItem(accessmasque)
 
     local accesschapeau = NativeUI.CreateCheckboxItem("Casque | Chapeau", Player.vetchapeau, "Enlever ou mettre votre Casque ou Chapeau")
-    menuaccessoires.SubMenu:AddItem(accesschapeau)
+    vetementxAccessoires.SubMenu:AddItem(accesschapeau)
 
     
-    menuaccessoires.SubMenu.OnCheckboxChange = function(sender, item, checked_)
+    vetementxAccessoires.SubMenu.OnCheckboxChange = function(sender, item, checked_)
         if item == accesslunettes then
             TriggerEvent('RiZiePersoMenu:access', "Glasses")
         elseif item == accessmasque then
@@ -1297,7 +1536,7 @@ Citizen.CreateThread(function()
     while true do
         Citizen.Wait(0)
 
-        if IsControlJustPressed(0,166) then  -- 166   = F5
+        if IsControlJustPressed(0,51) then  -- 166   = F5
             ESX.PlayerData = ESX.GetPlayerData()
 
             CreationMenu()
@@ -1362,4 +1601,21 @@ Citizen.CreateThread(function()
 
         Citizen.Wait(0)
     end
+end)
+
+
+------------action gang
+Citizen.CreateThread(function()
+  while true do
+    Wait(0)
+    if IsHandcuffed then
+      if IsDragged then
+        local ped = GetPlayerPed(GetPlayerFromServerId(CopPed))
+        local myped = GetPlayerPed(-1)
+        AttachEntityToEntity(myped, ped, 11816, 0.54, 0.54, 0.0, 0.0, 0.0, 0.0, false, false, false, false, 2, true)
+      else
+        DetachEntity(GetPlayerPed(-1), true, false)
+      end
+    end
+  end
 end)
