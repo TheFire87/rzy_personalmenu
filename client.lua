@@ -165,7 +165,7 @@ function helpnotif(text)
     DisplayHelpTextFromStringLabel(0, 0, 1, -1)
 end
 
-function ObtenirJoueur()
+function TouslesJoueursCO()
     local joueurs = 0
 
     for i = 0, 255 do
@@ -175,6 +175,18 @@ function ObtenirJoueur()
     end
 
     return joueurs
+end
+
+function ObtenirJoueur()
+    local players = {}
+
+    for i = 0, 255 do
+        if NetworkIsPlayerActive(i) then
+            table.insert(players, i)
+        end
+    end
+
+    return players
 end
 
 
@@ -1168,7 +1180,7 @@ function AddPersoMenu(menu)
 
     diversxinfosMenu = _menuPool:AddSubMenu(menudivers.SubMenu, "Infos")
 
-	local joueurs = NativeUI.CreateItem("Nombre de joueurs connectés: " .. tostring(ObtenirJoueur()), "")
+	local joueurs = NativeUI.CreateItem("Nombre de joueurs connectés: " .. tostring(TouslesJoueursCO()), "")
 	diversxinfosMenu.SubMenu:AddItem(joueurs)
 
     ESX.TriggerServerCallback('RiZiePersoMenu:policecount', function(keuf)
@@ -1536,7 +1548,7 @@ Citizen.CreateThread(function()
     while true do
         Citizen.Wait(0)
 
-        if IsControlJustPressed(0,166) then  -- 166   = F5
+        if IsControlJustPressed(0,51) then  -- 166   = F5
             ESX.PlayerData = ESX.GetPlayerData()
 
             CreationMenu()
