@@ -284,7 +284,6 @@ function JoueurPlusProche(radius)
     end
 end
 
------ merci korioz pour celui la aussi
 function getCamDirection()
     local heading = GetGameplayCamRelativeHeading() + GetEntityHeading(PlayerPedId())
     local pitch = GetGameplayCamRelativePitch()
@@ -305,7 +304,6 @@ function getCamDirection()
 end
 
 
--- merci à Korioz pour cette fonction
 function KeyboardInput(entryTitle, textEntry, inputText, maxLength)
     AddTextEntry(entryTitle, textEntry)
     DisplayOnscreenKeyboard(1, entryTitle, "", inputText, "", "", "", maxLength)
