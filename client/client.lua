@@ -1,5 +1,5 @@
 print("^0======================================================================^7")
-print("^0[^4Author^0] ^7:^0 ^RZY#2004^7")
+print("^0[^4Author^0] ^7:^0 RZY#2004^7")
 print("^0[^3Version^0] ^7:^0 ^01.0^7")
 print("^0[^2Download^0] ^7:^0 ^5https://github.com/Riziebtw/rzy_personalmenu/releases^7")
 print("^0[^1Issues^0] ^7:^0 ^5https://github.com/Riziebtw/rzy_personalmenu/issues^7")
@@ -207,6 +207,31 @@ function TouslesJoueursCO()
 end
 
 
+function JoueurPlusProche(radius)
+    local players = GetActivePlayers()
+    local closestDistance = -1
+    local closestPlayer = -1
+    local ply = GetPlayerPed(-1)
+    local plyCoords = GetEntityCoords(ply, 0)
+
+    for index,value in ipairs(players) do
+        local target = GetPlayerPed(value)
+        if(target ~= ply) then
+            local targetCoords = GetEntityCoords(GetPlayerPed(value), 0)
+            local distance = GetDistanceBetweenCoords(targetCoords['x'], targetCoords['y'], targetCoords['z'], plyCoords['x'], plyCoords['y'], plyCoords['z'], true)
+            if(closestDistance == -1 or closestDistance > distance) then
+                closestPlayer = value
+                closestDistance = distance
+            end
+        end
+    end
+	if closestDistance <= radius then
+		return closestPlayer
+	else
+		return nil
+	end
+end
+
 function SpecJoueur(id)
     local joueur = GetPlayerPed(id)
     Admin.actuellementspec = not Admin.actuellementspec
@@ -222,7 +247,7 @@ function SpecJoueur(id)
 end
 
 
-local function pointer()
+function pointer()
     RequestAnimDict("anim@mp_point")
     while not HasAnimDictLoaded("anim@mp_point") do
         Citizen.Wait(0)
@@ -233,7 +258,7 @@ local function pointer()
     RemoveAnimDict("anim@mp_point")
 end
 
-local function stoppointer()
+function stoppointer()
     Citizen.InvokeNative(0xD01015C7316AE176, GetPlayerPed(-1), "Stop")
     if not IsPedInjured(GetPlayerPed(-1)) then
         ClearPedSecondaryTask(GetPlayerPed(-1))
@@ -1681,7 +1706,7 @@ AddEventHandler('RiZiePersoMenu:porter', function()
         controlFlagMe = 49
         controlFlagTarget = 33
         animFlagTarget = 1
-        local closestPlayer = tonumber(ESX.Game.GetPlayersInArea(GetEntityCoords(PlayerPedId()), 3.0))
+        local closestPlayer = JoueurPlusProche(3)
         print(closestPlayer)
         target = GetPlayerServerId(closestPlayer)
         if closestPlayer ~= -1 and closestPlayer ~= nil then
@@ -1694,7 +1719,7 @@ AddEventHandler('RiZiePersoMenu:porter', function()
         Player.porter = false
         ClearPedSecondaryTask(GetPlayerPed(-1))
         DetachEntity(GetPlayerPed(-1), true, false)
-        local closestPlayer = tonumber(ESX.Game.GetPlayersInArea(GetEntityCoords(PlayerPedId()), 3.0))
+        local closestPlayer = JoueurPlusProche(3)
         target = GetPlayerServerId(closestPlayer)
         if target ~= 0 then 
             TriggerServerEvent('RiZiePersoMenu:animstop', target)
