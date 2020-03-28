@@ -27,11 +27,14 @@
     - Dirty Money
     - Bank money
     - License's (driver et weapon), Identity Card
+    - Drop and give money / dirty money
 - Bills
 - Clothing
     - clothes
     - Accessories
 - Animations
+    - You have every animations
+    - You can stop the animations by pressing "X" or by clicking the button to stop it
 - Procedures
 - Enterprise management
 - Gang management (if double job enabled into the config)
@@ -50,6 +53,21 @@
         - Save ped
     - Infos:
         - See how much peoples are online, how much EMS, LSPD, mechanic and cardealer are online's too
+- Admin:
+    - Players connected list:
+        - For each players you can:
+            - Spec the player
+            - Kick the player
+            - Revive the player (using esx_ambulancejob)
+            - Give money to the player
+            - TP ourself to the player
+    - Godmod
+    - Noclip
+    - Super Jump
+    - Infinite Stamina
+    - Fast Run
+- Config file:
+    - Fully customizable config file
     
 
 ### Credits / Thanks
