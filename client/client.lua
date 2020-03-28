@@ -206,16 +206,6 @@ function TouslesJoueursCO()
     return joueurs
 end
 
-function ObtenirJoueur()
-    local joueurs = 0
-
-    for _, i in ipairs(GetActivePlayers()) do
-        table.insert(joueurs, i)
-    end
-
-    return joueurs
-end
-
 function SpecJoueur(id)
     local joueur = GetPlayerPed(id)
     Admin.actuellementspec = not Admin.actuellementspec
