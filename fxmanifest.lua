@@ -68,13 +68,15 @@ client_scripts {
 }
 
 client_scripts {
-	'client.lua',
-	'config.lua',
-	'@es_extended/locale.lua'
+    '@es_extended/locale.lua',
+    'locales/fr.lua',
+	'client/client.lua',
+    'client/pointer.lua',
+	'config/config.lua'
 }
 
 server_scripts {
+    '@es_extended/locale.lua',
     '@mysql-async/lib/MySQL.lua',
-	'server.lua',
-	'@es_extended/locale.lua'
+	'server/server.lua'
 }
