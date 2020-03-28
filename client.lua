@@ -7,6 +7,7 @@ print("^0======================================================================^
 
 
 ESX = nil
+playerGroup = nil
 menuarmeitem = nil
 menuiteminv = nil
 billinfo = nil
@@ -14,6 +15,7 @@ billinfo = nil
 iteminventaire     = {}
 armeinventaire     = {}
 facturesinventaire = {}
+listejoueur = {}
 
 ---animation porter
 piggyBackAnimNamePlaying = ""
@@ -36,12 +38,23 @@ Player = {
     vetchapeau = true,
     -----
     -----
+    godmod = false,
+    noclip = false,
+    supersaut = false,
+    staminainfini = false,
+    fastrun = false,
+    -----
+    ----
     ragdoll = false,
     porter = false,
     minimap = true,
     voixchuchoter = false,
     voixnormal = true,
     voixcrier = false
+}
+
+Admin = {
+    actuellementspec = false
 }
 
 
@@ -57,6 +70,11 @@ Citizen.CreateThread(function()
 
     while actualSkin == nil do
         TriggerEvent('skinchanger:getSkin', function(skin) actualSkin = skin end)
+        Citizen.Wait(10)
+    end
+
+    while playerGroup == nil do
+        ESX.TriggerServerCallback('RiZiePersoMenu:getusergroup', function(group) playerGroup = group end)
         Citizen.Wait(10)
     end
 
@@ -190,6 +208,20 @@ function ObtenirJoueur()
     return players
 end
 
+function SpecJoueur(id)
+    local joueur = GetPlayerPed(id)
+    Admin.actuellementspec = not Admin.actuellementspec
+    if Admin.actuellementspec then
+        RequestCollisionAtCoord(GetEntityCoords(joueur))
+        NetworkSetInSpectatorMode(true, joueur)
+        ESX.ShowNotification('~b~Vous etes en train de spec: ~h~~w~' .. GetPlayerName(id))
+    else
+        RequestCollisionAtCoord(GetEntityCoords(joueur))
+        NetworkSetInSpectatorMode(false, joueur)
+        ESX.ShowNotification('~b~Vous avez arreté de spec: ~h~~w~' .. GetPlayerName(id))
+    end
+end
+
 
 
 function JoueurPlusProche(radius)
@@ -215,6 +247,26 @@ function JoueurPlusProche(radius)
 	else
 		return nil
 	end
+end
+
+----- merci korioz pour celui la aussi
+function getCamDirection()
+    local heading = GetGameplayCamRelativeHeading() + GetEntityHeading(PlayerPedId())
+    local pitch = GetGameplayCamRelativePitch()
+
+    local x = -math.sin(heading * math.pi/180.0)
+    local y = math.cos(heading * math.pi/180.0)
+    local z = math.sin(pitch * math.pi/180.0)
+
+    local len = math.sqrt(x * x + y * y + z * z)
+
+    if len ~= 0 then
+        x = x/len
+        y = y/len
+        z = z/len
+    end
+
+    return x, y, z
 end
 
 
@@ -260,6 +312,7 @@ function startAnim(lib, anim)
 	end)
 	if IsControlJustPressed(1,188) then
         -- si la touche X est press, ça annule l'emote
+        ClearPedTasksImmediately(PlayerPedId())
     end
 end
 
@@ -273,6 +326,7 @@ function animsActionScenario(animObj)
         TaskStartScenarioInPlace(ped, animObj, 0, false)
         if IsControlJustPressed(1,188) then
         	-- si la touche X est press, ça annule l'emote
+        	ClearPedTasksImmediately(PlayerPedId())
         end
 
     end
@@ -355,6 +409,20 @@ function AddPersoMenu(menu)
 
 
     -------------------------------ANIMATIOKNS
+
+    --local stopanimbtn = NativeUI.CreateItem("Stopper l'animation", "")
+    local stopanimbtn = NativeUI.CreateColouredItem("Stopper l'animation", "", Colours.RedDark, Colours.RedDark)
+
+    stopanimbtn:SetRightBadge(BadgeStyle.Tick)
+    menuanim.SubMenu:AddItem(stopanimbtn)
+
+    menuanim.SubMenu.OnItemSelect = function(sender, item, index)
+    	if item == stopanimbtn then
+    		ClearPedTasksImmediately(PlayerPedId())
+    	end
+	end
+
+
     --------------Sportives
     animsportMenu = _menuPool:AddSubMenu(menuanim.SubMenu, "Sportives")
 
@@ -916,9 +984,11 @@ function AddPersoMenu(menu)
     --[[ ici on get l'argent qu'il y a sur le "compte" black_money qui nous permet d'obtenir l'argent sale qu'on a sur soit, et on get l'argzent qu'il y a sur le compte 
     "bank" qui nous permet d'obtenir l'argent en banque. Et puis pour chacun des deux comptes on y crée un boutton qui correspond à l'argent.--]]
 
+    local argentsaleport = nil
+
     for i = 1, #ESX.PlayerData.accounts, 1 do
     	if ESX.PlayerData.accounts[i].name == 'black_money' then
-		    local argentsaleport = NativeUI.CreateListItem("Argent Sale: $" .. ESX.Math.GroupDigits(ESX.PlayerData.accounts[i].money), MoneyList, 1, "L'argent sale que tu as sur toi")
+		    argentsaleport = NativeUI.CreateListItem("Argent Sale: $" .. ESX.Math.GroupDigits(ESX.PlayerData.accounts[i].money), MoneyList, 1, "L'argent sale que tu as sur toi")
 		    menuportefeuille.SubMenu:AddItem(argentsaleport)
 		elseif ESX.PlayerData.accounts[i].name == 'bank' then
 		    local argentbanqueport = NativeUI.CreateItem("Banque: $" .. ESX.Math.GroupDigits(ESX.PlayerData.accounts[i].money), "L'argent que tu as en banque")
@@ -964,15 +1034,39 @@ function AddPersoMenu(menu)
 							if playertrouve == true then
 								local pedproche = GetPlayerPed(closestPlayer)
 								if not IsPedSittingInAnyVehicle(pedproche) then
-									if item == argentport then
+									if item == argentsaleport then
+										TriggerServerEvent('esx:giveInventoryItem', GetPlayerServerId(closestPlayer), 'item_account', 'black_money', quantite)
+										_menuPool:CloseAllMenus()
+									elseif item == argentport then
 										TriggerServerEvent('esx:giveInventoryItem', GetPlayerServerId(closestPlayer), 'item_money', 'money', quantite)
 										_menuPool:CloseAllMenus()
-									elseif item == argentsaleport then
-										TriggerServerEvent('esx:giveInventoryItem', GetPlayerServerId(closestPlayer), 'item_account', 'dirty_money', quantite)
 									end
 								end
 							else
 								ESX.ShowNotification('Il n\'y a personne aux alentours !')
+							end
+						else
+							ESX.ShowNotification('Montant invalide !')
+						end
+					end
+				end
+			elseif index == 2 then
+				local quantite = KeyboardInput('RIZIE_TXTBOX_AMOUNT', 'Combien d\'argent souhaitez vous jeter?', '', 10) -- 10 = le maximum de nombre possible ds la txtbox
+				if quantite ~= nil then
+					
+					quantite = tonumber(quantite)
+					if type(quantite) == 'number' then
+						quantite = ESX.Math.Round(quantite)
+						if quantite > 0 then
+							local pedproche = GetPlayerPed(closestPlayer)
+							if not IsPedSittingInAnyVehicle(pedproche) then
+								if item == argentsaleport then
+									TriggerServerEvent('esx:removeInventoryItem', 'item_account', 'black_money', quantite)
+									_menuPool:CloseAllMenus()
+								elseif item == argentport then
+									TriggerServerEvent('esx:removeInventoryItem', 'item_money', 'money', quantite)
+									_menuPool:CloseAllMenus()
+								end
 							end
 						else
 							ESX.ShowNotification('Montant invalide !')
@@ -1043,40 +1137,42 @@ function AddPersoMenu(menu)
 
     -------------------------MENU DIVERS/MENU GANG
     if Config.Gangmenu == true then
-	    if ESX.PlayerData.job2.name == "ballas" or ESX.PlayerData.job2.name == "vagos" or ESX.PlayerData.job2.name == "families" then
-		    diversxgangMenu = _menuPool:AddSubMenu(menudivers.SubMenu, "Actions Gang")
+        for i = 1, #Config.Gangs, 1 do
+            local name = Config.Gangs[i].name
+    	    if ESX.PlayerData.job2.name == name then
+    		    diversxgangMenu = _menuPool:AddSubMenu(menudivers.SubMenu, "Actions Gang")
 
-		    local menotter = NativeUI.CreateItem("Menotter", "Menotte le joueur le plus proche de toi")
-		    diversxgangMenu.SubMenu:AddItem(menotter)
+    		    local menotter = NativeUI.CreateItem("Menotter", "Menotte le joueur le plus proche de toi")
+    		    diversxgangMenu.SubMenu:AddItem(menotter)
 
-		    local kidnapper = NativeUI.CreateItem("Kidnapper", "Kidnappe le joueur le plus proche de toi")
-		    diversxgangMenu.SubMenu:AddItem(kidnapper)
+    		    local kidnapper = NativeUI.CreateItem("Kidnapper", "Kidnappe le joueur le plus proche de toi")
+    		    diversxgangMenu.SubMenu:AddItem(kidnapper)
 
-		    local mettrevehicle = NativeUI.CreateItem("Mettre de force dans le véhicule", "Mettre de force le joueur le plus proche de toi dans le véhicule")
-		    diversxgangMenu.SubMenu:AddItem(mettrevehicle)
+    		    local mettrevehicle = NativeUI.CreateItem("Mettre de force dans le véhicule", "Mettre de force le joueur le plus proche de toi dans le véhicule")
+    		    diversxgangMenu.SubMenu:AddItem(mettrevehicle)
 
-		    local sortirvehicle = NativeUI.CreateItem("Sortir de force du véhicule", "Sortir de force le joueur le plus proche de toi du véhicule")
-		    diversxgangMenu.SubMenu:AddItem(sortirvehicle)
+    		    local sortirvehicle = NativeUI.CreateItem("Sortir de force du véhicule", "Sortir de force le joueur le plus proche de toi du véhicule")
+    		    diversxgangMenu.SubMenu:AddItem(sortirvehicle)
 
 
-		    diversxgangMenu.SubMenu.OnItemSelect = function(sender, item)
-	            local closestPlayer, closestDistance = ESX.Game.GetClosestPlayer()
-				if closestDistance ~= -1 and closestDistance <= 3 and not IsPedInAnyVehicle(GetPlayerPed(GetPlayerFromServerId(closestPlayer)), true) then   	
-			        if item == menotter then
-			            TriggerServerEvent('RiZiePersoMenu:menotter', GetPlayerServerId(closestPlayer))
-			        elseif item == kidnapper then
-			            TriggerServerEvent('RiZiePersoMenu:kidnapper', GetPlayerServerId(closestPlayer))
-			        elseif item == mettrevehicle then
-			            TriggerServerEvent('RiZiePersoMenu:mettrevehicle', GetPlayerServerId(closestPlayer))
-			        elseif item == sortirvehicle then
-			            TriggerServerEvent('RiZiePersoMenu:sortirvehicle', GetPlayerServerId(closestPlayer))
-			        end
-			    else
-			    	ESX.ShowNotification('Il n\'y a personne aux alentours !')
-			    end
-	    	end
-
-		end
+    		    diversxgangMenu.SubMenu.OnItemSelect = function(sender, item)
+    	            local closestPlayer, closestDistance = ESX.Game.GetClosestPlayer()
+    				if closestDistance ~= -1 and closestDistance <= 3 and not IsPedInAnyVehicle(GetPlayerPed(GetPlayerFromServerId(closestPlayer)), true) then   	
+    			        if item == menotter then
+    			            TriggerServerEvent('RiZiePersoMenu:menotter', GetPlayerServerId(closestPlayer))
+    			        elseif item == kidnapper then
+    			            TriggerServerEvent('RiZiePersoMenu:kidnapper', GetPlayerServerId(closestPlayer))
+    			        elseif item == mettrevehicle then
+    			            TriggerServerEvent('RiZiePersoMenu:mettrevehicle', GetPlayerServerId(closestPlayer))
+    			        elseif item == sortirvehicle then
+    			            TriggerServerEvent('RiZiePersoMenu:sortirvehicle', GetPlayerServerId(closestPlayer))
+    			        end
+    			    else
+    			    	ESX.ShowNotification('Il n\'y a personne aux alentours !')
+    			    end
+    	    	end
+    		end
+        end
 	end
 
     ---------------------MENU DIVERS/ACTIONS
@@ -1255,7 +1351,110 @@ function AddPersoMenu(menu)
         end
     end
 
-    --
+    -------------------------------MENU ADMIN
+    for i = 1, #Config.Rank, 1 do
+        if playerGroup == Config.Rank[i].name then
+            local menuadmin = _menuPool:AddSubMenu(menu, "Modération", "Menu réservé au bg de staff")
+            
+            -----------------------MENU ADMIN/JOEURS CO
+            joueurscoAdmin = _menuPool:AddSubMenu(menuadmin.SubMenu, "Liste des Joueurs Connectés", "Obtient la liste des joueurs connectés")
+
+            for i = 0, 255 do
+                if NetworkIsPlayerActive(i) and GetPlayerServerId(i)  ~= 0 then
+                    local valuejoueur = GetPlayerServerId(i)
+                    local namejoueur = GetPlayerName(i)
+
+                    listejoueur[valuejoueur] = _menuPool:AddSubMenu(joueurscoAdmin.SubMenu, namejoueur, "")
+
+                    specjoueur = NativeUI.CreateCheckboxItem("Spec " .. namejoueur, Admin.actuellementspec, "")
+                    listejoueur[valuejoueur].SubMenu:AddItem(specjoueur)
+
+                    kickjoueur = NativeUI.CreateItem("Kick " .. namejoueur, "")
+                    listejoueur[valuejoueur].SubMenu:AddItem(kickjoueur)
+
+                    revivejoueur = NativeUI.CreateItem("Revive " .. namejoueur, "")
+                    listejoueur[valuejoueur].SubMenu:AddItem(revivejoueur)
+
+                    donnerargentjoueur = NativeUI.CreateItem("Donner de l'argent à " .. namejoueur, "")
+                    listejoueur[valuejoueur].SubMenu:AddItem(donnerargentjoueur)
+
+                    tpajoueur = NativeUI.CreateItem("Me TP à " .. namejoueur, "")
+                    listejoueur[valuejoueur].SubMenu:AddItem(tpajoueur)
+
+                    listejoueur[valuejoueur].SubMenu.OnItemSelect = function(sender, item)
+                        if item == kickjoueur then
+                            TriggerServerEvent('RiZiePersoMenu:kickjoueur', valuejoueur)
+                            _menuPool:CloseAllMenus()
+                        elseif item == revivejoueur then
+                            TriggerServerEvent('esx_ambulancejob:revive', valuejoueur)
+                        elseif item == donnerargentjoueur then
+                            local quantite = KeyboardInput('RIZIE_TXTBOX_AMOUNT', 'Combien d\'argent souhaitez vous donner?', '', 10) -- 10 = le maximum de nombre possible ds la txtbox
+                            TriggerServerEvent('RiZiePersoMenu:donnerargent', quantite, valuejoueur)
+                            ESX.ShowNotification('~b~Vous avez donné: ~w~' .. tostring(quantite) .. '~b~$ à ~w~' .. namejoueur)
+                        elseif item == tpajoueur then
+                            SetEntityCoords(PlayerPedId(), GetEntityCoords(GetPlayerPed(GetPlayerFromServerId(valuejoueur))))
+                            ESX.ShowNotification('~b~Vous vous etes tp à: ~h~~w~' .. namejoueur)
+                        end
+                    end
+
+                    listejoueur[valuejoueur].SubMenu.OnCheckboxChange = function(sender, item, checked_)
+                        if item == specjoueur then
+                            SpecJoueur(i)
+                        end
+                    end
+                end
+            end
+
+
+            ----------------------------------MENU ADMIN BASE
+
+
+            local godmodstaff = NativeUI.CreateCheckboxItem("GodMod", Player.godmod, "Activez ou désactivez le godmod")
+            menuadmin.SubMenu:AddItem(godmodstaff)
+
+            local noclipstaff = NativeUI.CreateCheckboxItem("NoClip", Player.noclip, "Activez ou désactivez le noclip")
+            menuadmin.SubMenu:AddItem(noclipstaff)
+
+            local supersautstaff = NativeUI.CreateCheckboxItem("Super Saut", Player.supersaut, "Activez ou désactivez le super saut tah spider man")
+            menuadmin.SubMenu:AddItem(supersautstaff)
+
+            local staminastaff = NativeUI.CreateCheckboxItem("Stamina Infinit", Player.staminainfini, "Activez ou désactivez la stamina infinit")
+            menuadmin.SubMenu:AddItem(staminastaff)
+
+            local fastrunstaff = NativeUI.CreateCheckboxItem("Fast Run", Player.fastrun, "Activez ou désactivez le fast run")
+            menuadmin.SubMenu:AddItem(fastrunstaff)
+
+
+
+            menuadmin.SubMenu.OnCheckboxChange = function(sender, item, checked_)
+                if item == godmodstaff then
+                    Player.godmod = not Player.godmod
+                    SetEntityInvincible(PlayerPedId(), Player.godmod)
+                    ESX.ShowNotification('~b~Vous avez mit le GodMod en: ~h~~w~' .. tostring(Player.godmod))
+                elseif item == noclipstaff then
+                    Player.noclip = not Player.noclip
+                    if Player.noclip then
+                        SetEntityInvincible(PlayerPedId(), true)
+                        SetEntityVisible(PlayerPedId(), false, false)
+                        ESX.ShowNotification('~b~Vous avez mit le NoClip en: ~h~~w~' .. tostring(Player.noclip))
+                    else
+                        SetEntityInvincible(PlayerPedId(), false)
+                        SetEntityVisible(PlayerPedId(), true, false)
+                        ESX.ShowNotification('~b~Vous avez mit le NoClip en: ~h~~w~' .. tostring(Player.noclip))
+                    end
+                elseif item == supersautstaff then
+                    Player.supersaut = not Player.supersaut
+                    ESX.ShowNotification('~b~Vous avez mit le Super Saut en: ~h~~w~' .. tostring(Player.supersaut))
+                elseif item == staminastaff then
+                    Player.staminainfini = not Player.staminainfini
+                    ESX.ShowNotification('~b~Vous avez mit la Stamina Infinit en: ~h~~w~' .. tostring(Player.staminainfini))
+                elseif item == fastrunstaff then
+                    Player.fastrun = not Player.fastrun
+                    ESX.ShowNotification('~b~Vous avez mit le Fast Run en: ~h~~w~' .. tostring(Player.fastrun))
+                end
+            end
+        end
+    end
 end
 
 
@@ -1548,11 +1747,11 @@ end
 Citizen.CreateThread(function()
     while true do
         Citizen.Wait(0)
-	    if IsControlJustPressed(0,166) then  -- 166   = F5
+	    if IsControlJustPressed(0,51) then  -- 166   = F5
 	    	-- on évite la dupli des menus si le joueur essaies de l'open  alors qu'il est déjà open
 	    	menuperso:Clear()
-           	menuarmeitem:Clear()
-           	menuiteminv:Clear()
+            menuarmeitem:Clear()
+            menuiteminv:Clear()
 	        _menuPool:CloseAllMenus(true)
 	        --
 
@@ -1587,6 +1786,7 @@ Citizen.CreateThread(function()
                 iteminventaire = {}
                 armeinventaire = {}
                 facturesinventaire = {}
+                listejoueur = {}
 
                 _menuPool = NativeUI.CreatePool()
 
@@ -1594,8 +1794,8 @@ Citizen.CreateThread(function()
                 menuiteminv = NativeUI.CreateMenu(GetPlayerName(PlayerId()), "Action Item")
                 menuperso = NativeUI.CreateMenu(GetPlayerName(PlayerId()), Config.NomServer)
                 _menuPool:Add(menuperso)
-		_menuPool:Add(menuarmeitem)
-		_menuPool:Add(menuiteminv)
+				_menuPool:Add(menuarmeitem)
+				_menuPool:Add(menuiteminv)
             end
         end
         Citizen.Wait(0)
@@ -1631,4 +1831,55 @@ Citizen.CreateThread(function()
       end
     end
   end
+end)
+
+
+-------------MODERATION
+
+Citizen.CreateThread(function()
+    while true do
+        if ESX ~= nil then
+            ESX.TriggerServerCallback('RiZiePersoMenu:getusergroup', function(group) playerGroup = group end)
+            Citizen.Wait(30000)
+        else
+            Citizen.Wait(200)
+        end
+    end
+end)
+
+
+Citizen.CreateThread(function()
+    while true do
+        if Player.noclip then
+            local x, y, z = table.unpack(GetEntityCoords(PlayerPedId(), true))
+            local dx, dy, dz = getCamDirection()
+            local speed = 0.5
+
+            SetEntityVelocity(PlayerPedId(), 0.0001, 0.0001, 0.0001)
+
+            if IsControlPressed(0, 32) then
+                x = x + speed * dx
+                y = y + speed * dy
+                z = z + speed * dz
+            end
+
+            if IsControlPressed(0, 269) then
+                x = x - speed * dx
+                y = y - speed * dy
+                z = z - speed * dz
+            end
+
+            SetEntityCoordsNoOffset(PlayerPedId(), x, y, z, true, true, true)
+        end
+        if Player.supersaut then
+            SetSuperJumpThisFrame(PlayerId(-1))
+        end
+        if Player.staminainfini then
+            RestorePlayerStamina(PlayerId(-1), 1.0)
+        end
+        if Player.fastrun then
+            SetRunSprintMultiplierForPlayer(PlayerId(-1), 2.49) SetPedMoveRateOverride(GetPlayerPed(-1), 2.15)
+        end
+        Citizen.Wait(0)
+    end
 end)

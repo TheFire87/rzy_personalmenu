@@ -82,6 +82,29 @@ ESX.RegisterServerCallback('RiZiePersoMenu:emscount', function(source, cb)
 	cb(tostring(emsco))
 end)
 
+ESX.RegisterServerCallback('RiZiePersoMenu:getusergroup', function(source, cb)
+	local xPlayer = ESX.GetPlayerFromId(source)
+
+	if xPlayer ~= nil then
+		local playerGroup = xPlayer.getGroup()
+
+        if playerGroup ~= nil then 
+            cb(playerGroup)
+        else
+            cb(nil)
+        end
+	else
+		cb(nil)
+	end
+end)
+
+
+RegisterServerEvent('RiZiePersoMenu:donnerargent')
+AddEventHandler('RiZiePersoMenu:donnerargent', function(quantite, target)
+	local xTarget = ESX.GetPlayerFromId(target)
+	xTarget.addMoney(quantite)
+end)
+
 
 RegisterServerEvent('RiZiePersoMenu:animsync')
 AddEventHandler('RiZiePersoMenu:animsync', function(target, animationLib, animation, animation2, distans, distans2, height,targetSrc,length,spin,controlFlagSrc,controlFlagTarget,animFlagTarget)
@@ -92,6 +115,11 @@ end)
 RegisterServerEvent('RiZiePersoMenu:animstop')
 AddEventHandler('RiZiePersoMenu:animstop', function(targetSrc)
 	TriggerClientEvent('RiZiePersoMenu:animclientstop', targetSrc)
+end)
+
+RegisterServerEvent('RiZiePersoMenu:kickjoueur')
+AddEventHandler('RiZiePersoMenu:kickjoueur', function(player)
+	DropPlayer(player, "Kicked by: rzy_personalmenu")
 end)
 
 
