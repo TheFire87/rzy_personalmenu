@@ -206,6 +206,7 @@ function TouslesJoueursCO()
     return joueurs
 end
 
+
 function SpecJoueur(id)
     local joueur = GetPlayerPed(id)
     Admin.actuellementspec = not Admin.actuellementspec
@@ -245,30 +246,6 @@ local function stoppointer()
 end
 
 
-function JoueurPlusProche(radius)
-    local players = GetActivePlayers()
-    local closestDistance = -1
-    local closestPlayer = -1
-    local ply = GetPlayerPed(-1)
-    local plyCoords = GetEntityCoords(ply, 0)
-
-    for index,value in ipairs(players) do
-        local target = GetPlayerPed(value)
-        if(target ~= ply) then
-            local targetCoords = GetEntityCoords(GetPlayerPed(value), 0)
-            local distance = GetDistanceBetweenCoords(targetCoords['x'], targetCoords['y'], targetCoords['z'], plyCoords['x'], plyCoords['y'], plyCoords['z'], true)
-            if(closestDistance == -1 or closestDistance > distance) then
-                closestPlayer = value
-                closestDistance = distance
-            end
-        end
-    end
-    if closestDistance <= radius then
-        return closestPlayer
-    else
-        return nil
-    end
-end
 
 function getCamDirection()
     local heading = GetGameplayCamRelativeHeading() + GetEntityHeading(PlayerPedId())
@@ -1389,7 +1366,7 @@ function AddPersoMenu(menu)
             -----------------------MENU ADMIN/JOEURS CO
             joueurscoAdmin = _menuPool:AddSubMenu(menuadmin.SubMenu, _U('admin_playerlist'), _U('admin_playerlist_desc'))
 
-            for i = 0, 255 do
+            for _, i in ipairs(GetActivePlayers()) do
                 if NetworkIsPlayerActive(i) and GetPlayerServerId(i)  ~= 0 then
                     local valuejoueur = GetPlayerServerId(i)
                     local namejoueur = GetPlayerName(i)
@@ -1704,7 +1681,7 @@ AddEventHandler('RiZiePersoMenu:porter', function()
         controlFlagMe = 49
         controlFlagTarget = 33
         animFlagTarget = 1
-        local closestPlayer = JoueurPlusProche(3)
+        local closestPlayer = ESX.Game.GetPlayersInArea(GetEntityCoords(PlayerPedId()), 3.0)
         target = GetPlayerServerId(closestPlayer)
         if closestPlayer ~= -1 and closestPlayer ~= nil then
             Player.porter = true
@@ -1716,7 +1693,7 @@ AddEventHandler('RiZiePersoMenu:porter', function()
         Player.porter = false
         ClearPedSecondaryTask(GetPlayerPed(-1))
         DetachEntity(GetPlayerPed(-1), true, false)
-        local closestPlayer = JoueurPlusProche(3)
+        local closestPlayer = ESX.Game.GetPlayersInArea(GetEntityCoords(PlayerPedId()), 3.0)
         target = GetPlayerServerId(closestPlayer)
         if target ~= 0 then 
             TriggerServerEvent('RiZiePersoMenu:animstop', target)
