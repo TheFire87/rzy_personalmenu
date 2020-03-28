@@ -1352,7 +1352,7 @@ function AddPersoMenu(menu)
             TriggerEvent('RiZiePersoMenu:access', "Helmet")
         end
     end
-
+   
     -------------------------------MENU ADMIN
     for i = 1, #Config.Rank, 1 do
         if playerGroup == Config.Rank[i].name then
@@ -1681,7 +1681,8 @@ AddEventHandler('RiZiePersoMenu:porter', function()
         controlFlagMe = 49
         controlFlagTarget = 33
         animFlagTarget = 1
-        local closestPlayer = ESX.Game.GetPlayersInArea(GetEntityCoords(PlayerPedId()), 3.0)
+        local closestPlayer = tonumber(ESX.Game.GetPlayersInArea(GetEntityCoords(PlayerPedId()), 3.0))
+        print(closestPlayer)
         target = GetPlayerServerId(closestPlayer)
         if closestPlayer ~= -1 and closestPlayer ~= nil then
             Player.porter = true
@@ -1693,7 +1694,7 @@ AddEventHandler('RiZiePersoMenu:porter', function()
         Player.porter = false
         ClearPedSecondaryTask(GetPlayerPed(-1))
         DetachEntity(GetPlayerPed(-1), true, false)
-        local closestPlayer = ESX.Game.GetPlayersInArea(GetEntityCoords(PlayerPedId()), 3.0)
+        local closestPlayer = tonumber(ESX.Game.GetPlayersInArea(GetEntityCoords(PlayerPedId()), 3.0))
         target = GetPlayerServerId(closestPlayer)
         if target ~= 0 then 
             TriggerServerEvent('RiZiePersoMenu:animstop', target)
