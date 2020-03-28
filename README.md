@@ -85,6 +85,7 @@ This order also applies in the startup order.
 - [esx_datastore](https://github.com/ESX-Org/esx_datastore)
 - [esx_billing](https://github.com/ESX-Org/esx_billing)
 - [esx_society](https://github.com/ESX-Org/esx_society)
+- [esx_ambulancejob](https://github.com/ESX-Org/esx_ambulancejob)
 - [skinchanger](https://github.com/ESX-Org/skinchanger)
 - [esx_skin](https://github.com/ESX-Org/esx_skin)
 - [esx_accessories](https://github.com/ESX-Org/esx_accessories)
