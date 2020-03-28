@@ -72,9 +72,9 @@
 
 ### Credits / Thanks
 - Korioz for:
-    - Idea
     - Démarches
-    - KeyboardInput function
+- Snikrs for:
+    - M'a gentilment aidé à réglé 2-3 trucs
 
 ### Requirements
 This order also applies in the startup order.
