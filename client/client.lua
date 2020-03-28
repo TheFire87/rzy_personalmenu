@@ -199,25 +199,21 @@ end
 function TouslesJoueursCO()
     local joueurs = 0
 
-    for i = 0, 255 do
-        if NetworkIsPlayerActive(i) then
-            joueurs = joueurs + 1
-        end
+    for _, i in ipairs(GetActivePlayers()) do
+        joueurs = joueurs + 1
     end
 
     return joueurs
 end
 
 function ObtenirJoueur()
-    local players = {}
+    local joueurs = 0
 
-    for i = 0, 255 do
-        if NetworkIsPlayerActive(i) then
-            table.insert(players, i)
-        end
+    for _, i in ipairs(GetActivePlayers()) do
+        table.insert(joueurs, i)
     end
 
-    return players
+    return joueurs
 end
 
 function SpecJoueur(id)
@@ -260,7 +256,7 @@ end
 
 
 function JoueurPlusProche(radius)
-    local players = ObtenirJoueur()
+    local players = GetActivePlayers()
     local closestDistance = -1
     local closestPlayer = -1
     local ply = GetPlayerPed(-1)
@@ -304,25 +300,30 @@ function getCamDirection()
 end
 
 
-function KeyboardInput(entryTitle, textEntry, inputText, maxLength)
-    AddTextEntry(entryTitle, textEntry)
-    DisplayOnscreenKeyboard(1, entryTitle, "", inputText, "", "", "", maxLength)
-    blockinput = true
+function KeyboardInput(TextEntry, ExampleText, MaxStringLenght)
 
-    while UpdateOnscreenKeyboard() ~= 1 and UpdateOnscreenKeyboard() ~= 2 do
-        Citizen.Wait(0)
-    end
+	-- TextEntry		-->	The Text above the typing field in the black square
+	-- ExampleText		-->	An Example Text, what it should say in the typing field
+	-- MaxStringLenght	-->	Maximum String Lenght
 
-    if UpdateOnscreenKeyboard() ~= 2 then
-        local result = GetOnscreenKeyboardResult()
-        Citizen.Wait(500)
-        blockinput = false
-        return result
-    else
-        Citizen.Wait(500)
-        blockinput = false
-        return nil
-    end
+	AddTextEntry('FMMC_KEY_TIP1', TextEntry) --Sets the Text above the typing field in the black square
+	DisplayOnscreenKeyboard(1, "FMMC_KEY_TIP1", "", ExampleText, "", "", "", MaxStringLenght) --Actually calls the Keyboard Input
+	blockinput = true --Blocks new input while typing if **blockinput** is used
+
+	while UpdateOnscreenKeyboard() ~= 1 and UpdateOnscreenKeyboard() ~= 2 do --While typing is not aborted and not finished, this loop waits
+		Citizen.Wait(0)
+	end
+		
+	if UpdateOnscreenKeyboard() ~= 2 then
+		local result = GetOnscreenKeyboardResult() --Gets the result of the typing
+		Citizen.Wait(500) --Little Time Delay, so the Keyboard won't open again if you press enter to finish the typing
+		blockinput = false --This unblocks new Input when typing is done
+		return result --Returns the result
+	else
+		Citizen.Wait(500) --Little Time Delay, so the Keyboard won't open again if you press enter to finish the typing
+		blockinput = false --This unblocks new Input when typing is done
+		return nil --Returns nil if the typing got aborted
+	end
 end
 
 function startAttitude(lib, anim)
@@ -1388,7 +1389,7 @@ function AddPersoMenu(menu)
     -------------------------------MENU ADMIN
     for i = 1, #Config.Rank, 1 do
         if playerGroup == Config.Rank[i].name then
-            local menuadmin = _menuPool:AddSubMenu(menu, "Modération", "Menu réservé au bg de staff")
+            local menuadmin = _menuPool:AddSubMenu(menu, _U('admin_submenu'), _U('admin_submenu_desc'))
                 
             local specjoueur = {}
             local kickjoueur = {}
@@ -1396,7 +1397,7 @@ function AddPersoMenu(menu)
             local donnerargentjoueur = {}
             local tpajoueur = {}
             -----------------------MENU ADMIN/JOEURS CO
-            joueurscoAdmin = _menuPool:AddSubMenu(menuadmin.SubMenu, "Liste des Joueurs Connectés", "Obtient la liste des joueurs connectés")
+            joueurscoAdmin = _menuPool:AddSubMenu(menuadmin.SubMenu, _U('admin_playerlist'), _U('admin_playerlist_desc'))
 
             for i = 0, 255 do
                 if NetworkIsPlayerActive(i) and GetPlayerServerId(i)  ~= 0 then
@@ -1414,10 +1415,10 @@ function AddPersoMenu(menu)
                     revivejoueur[valuejoueur] = NativeUI.CreateItem("Revive " .. namejoueur, "")
                     listejoueur[valuejoueur].SubMenu:AddItem(revivejoueur[valuejoueur])
 
-                    donnerargentjoueur[valuejoueur] = NativeUI.CreateItem("Donner de l'argent à " .. namejoueur, "")
+                    donnerargentjoueur[valuejoueur] = NativeUI.CreateItem(_U('admin_give_money_to') .. namejoueur, "")
                     listejoueur[valuejoueur].SubMenu:AddItem(donnerargentjoueur[valuejoueur])
 
-                    tpajoueur[valuejoueur] = NativeUI.CreateItem("Me TP à " .. namejoueur, "")
+                    tpajoueur[valuejoueur] = NativeUI.CreateItem(_U('admin_tp_to') .. namejoueur, "")
                     listejoueur[valuejoueur].SubMenu:AddItem(tpajoueur[valuejoueur])
 
                     listejoueur[valuejoueur].SubMenu.OnItemSelect = function(sender, item)
@@ -1427,12 +1428,12 @@ function AddPersoMenu(menu)
                         elseif item == revivejoueur[valuejoueur] then
                             TriggerServerEvent('esx_ambulancejob:revive', valuejoueur)
                         elseif item == donnerargentjoueur[valuejoueur] then
-                            local quantite = KeyboardInput('RIZIE_TXTBOX_AMOUNT', 'Combien d\'argent souhaitez vous donner?', '', 10) -- 10 = le maximum de nombre possible ds la txtbox
+                            local quantite = KeyboardInput('RIZIE_TXTBOX_AMOUNT', _U('wallet_how_much_money_give'), '', 10) -- 10 = le maximum de nombre possible ds la txtbox
                             TriggerServerEvent('RiZiePersoMenu:donnerargent', quantite, valuejoueur)
-                            ESX.ShowNotification('~b~Vous avez donné: ~w~' .. tostring(quantite) .. '~b~$ à ~w~' .. namejoueur)
+                            ESX.ShowNotification(_U('admin_you_gave_money', tostring(quantite), namejoueur))
                         elseif item == tpajoueur[valuejoueur] then
                             SetEntityCoords(PlayerPedId(), GetEntityCoords(GetPlayerPed(GetPlayerFromServerId(valuejoueur))))
-                            ESX.ShowNotification('~b~Vous vous etes tp à: ~h~~w~' .. namejoueur)
+                            ESX.ShowNotification(_U('admin_you_teleported_urself_to', namejoueur))
                         end
                     end
 
@@ -1448,19 +1449,19 @@ function AddPersoMenu(menu)
             ----------------------------------MENU ADMIN BASE
 
 
-            local godmodstaff = NativeUI.CreateCheckboxItem("GodMod", Admin.godmod, "Activez ou désactivez le godmod")
+            local godmodstaff = NativeUI.CreateCheckboxItem("GodMod", Admin.godmod, _U('admin_godmod_desc'))
             menuadmin.SubMenu:AddItem(godmodstaff)
 
-            local noclipstaff = NativeUI.CreateCheckboxItem("NoClip", Admin.noclip, "Activez ou désactivez le noclip")
+            local noclipstaff = NativeUI.CreateCheckboxItem("NoClip", Admin.noclip, _U('admin_noclip_desc'))
             menuadmin.SubMenu:AddItem(noclipstaff)
 
-            local supersautstaff = NativeUI.CreateCheckboxItem("Super Saut", Admin.supersaut, "Activez ou désactivez le super saut tah spider man")
+            local supersautstaff = NativeUI.CreateCheckboxItem("Super Saut", Admin.supersaut, _U('admin_superjump_desc'))
             menuadmin.SubMenu:AddItem(supersautstaff)
 
-            local staminastaff = NativeUI.CreateCheckboxItem("Stamina Infinit", Admin.staminainfini, "Activez ou désactivez la stamina infinit")
+            local staminastaff = NativeUI.CreateCheckboxItem("Stamina Infinit", Admin.staminainfini, _U('admin_stamina_desc'))
             menuadmin.SubMenu:AddItem(staminastaff)
 
-            local fastrunstaff = NativeUI.CreateCheckboxItem("Fast Run", Admin.fastrun, "Activez ou désactivez le fast run")
+            local fastrunstaff = NativeUI.CreateCheckboxItem("Fast Run", Admin.fastrun, _U('admin_fastrun_desc'))
             menuadmin.SubMenu:AddItem(fastrunstaff)
 
 
@@ -1469,27 +1470,27 @@ function AddPersoMenu(menu)
                 if item == godmodstaff then
                     Admin.godmod = not Admin.godmod
                     SetEntityInvincible(PlayerPedId(), Admin.godmod)
-                    ESX.ShowNotification('~b~Vous avez mit le GodMod en: ~h~~w~' .. tostring(Admin.godmod))
+                    ESX.ShowNotification(_U('admin_enabled_godmod') .. tostring(Admin.godmod))
                 elseif item == noclipstaff then
                     Admin.noclip = not Admin.noclip
                     if Admin.noclip then
                         SetEntityInvincible(PlayerPedId(), true)
                         SetEntityVisible(PlayerPedId(), false, false)
-                        ESX.ShowNotification('~b~Vous avez mit le NoClip en: ~h~~w~' .. tostring(Admin.noclip))
+                        ESX.ShowNotification(_U('admin_enabled_noclip') .. tostring(Admin.noclip))
                     else
                         SetEntityInvincible(PlayerPedId(), false)
                         SetEntityVisible(PlayerPedId(), true, false)
-                        ESX.ShowNotification('~b~Vous avez mit le NoClip en: ~h~~w~' .. tostring(Admin.noclip))
+                        ESX.ShowNotification(_U('admin_enabled_noclip') .. tostring(Admin.noclip))
                     end
                 elseif item == supersautstaff then
                     Admin.supersaut = not Admin.supersaut
-                    ESX.ShowNotification('~b~Vous avez mit le Super Saut en: ~h~~w~' .. tostring(Admin.supersaut))
+                    ESX.ShowNotification(_U('admin_enabled_superjump') .. tostring(Admin.supersaut))
                 elseif item == staminastaff then
                     Admin.staminainfini = not Admin.staminainfini
-                    ESX.ShowNotification('~b~Vous avez mit la Stamina Infinit en: ~h~~w~' .. tostring(Admin.staminainfini))
+                    ESX.ShowNotification(_U('admin_enabled_stamina') .. tostring(Admin.staminainfini))
                 elseif item == fastrunstaff then
                     Admin.fastrun = not Admin.fastrun
-                    ESX.ShowNotification('~b~Vous avez mit le Fast Run en: ~h~~w~' .. tostring(Admin.fastrun))
+                    ESX.ShowNotification(_U('admin_enabled_fastrun') .. tostring(Admin.fastrun))
                 end
             end
         end
@@ -1685,11 +1686,11 @@ AddEventHandler('RiZiePersoMenu:access', function(accesstype)
             end)
         else
             if _accessoire == "glasses" then
-                ESX.ShowNotification('Vous n\'avez pas de lunettes !')
+                ESX.ShowNotification(_U('clothes_you_do_not_have_glasses'))
             elseif _accessoire == "mask" then
-                ESX.ShowNotification('Vous n\'avez pas de masque !')
+                ESX.ShowNotification(_U('clothes_you_do_not_have_mask'))
             elseif _accessoire == "helmet" then
-                ESX.ShowNotification('Vous n\'avez pas de chapeau/ou masque !')
+                ESX.ShowNotification(_U('clothes_you_do_not_have_helmet'))
             end
         end
     end, accesstype)

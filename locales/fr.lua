@@ -108,6 +108,7 @@ Locales['fr'] = {
 	['clothes_ammo'] = 'Gilet par Balles',
 	['clothes_ammo_desc'] = 'Enlever ou mettre votre gilet par balle',
 
+
 	['accessories_glasses'] = 'Lunettes',
 	['accessories_glasses_desc'] = 'Enlever ou mettre vos Lunettes',
 	['accessories_mask'] = 'Masque',
@@ -115,6 +116,37 @@ Locales['fr'] = {
 	['accessories_helmet'] = 'Casque | Chapeau',
 	['accessories_helmet_desc'] = 'Enlever ou mettre votre Casque ou Chapeau',
 
+	['clothes_you_do_not_have_glasses'] = 'Vous n\'avez pas de lunettes !',
+	['clothes_you_do_not_have_mask'] = 'Vous n\'avez pas de masque !',
+	['clothes_you_do_not_have_helmet'] = 'Vous n\'avez pas de chapeau/ou masque !',
+
+
+	-------admin
+	['admin_submenu'] = 'Modération',
+	['admin_submenu_desc'] = 'Menu réservé au bg de staff',
+
+	['admin_playerlist'] = 'Liste des joueurs connectés',
+	['admin_playerlist_desc'] = 'Obtient la liste des joueurs connectés',
+
+	['admin_give_money_to'] = 'Donner de l\'argent à ',
+	['admin_tp_to'] = 'Me TP à ',
+
+	-- %s
+	['admin_you_gave_money'] = '~b~Vous avez donné: ~w~%s$ ~b~à ~w~ %s',
+	['admin_you_teleported_urself_to'] = '~b~Vous vous etes tp à: ~h~~w~ %s',
+
+	['admin_godmod_desc'] = 'Activez ou désactivez le godmod',
+	['admin_noclip_desc'] = 'Activez ou désactivez le noclip',
+	['admin_superjump_desc'] = 'Activez ou désactivez le super saut',
+	['admin_stamina_desc'] = 'Activez ou désactivez la stamina infinit',
+	['admin_fastrun_desc'] = 'Activez ou désactivez le fast run',
+
+	['admin_enabled_godmod'] = '~b~Vous avez mit le GodMod en: ~h~~w~',
+	['admin_enabled_noclip'] = '~b~Vous avez mit le GodMod en: ~h~~w~',
+	['admin_enabled_superjump'] = '~b~Vous avez mit le Super Saut en: ~h~~w~',
+	['admin_enabled_stamina'] = '~b~Vous avez mit la Stamina Infinit en: ~h~~w~',
+	['admin_enabled_fastrun'] = '~b~Vous avez mit le Fast Run en: ~h~~w~',
+ 
 	------citizen Actions
 	['citizen_carry'] = 'Porter',
 	['citizen_carry_desc'] = 'Portes le joueur le plus proche de toi',
