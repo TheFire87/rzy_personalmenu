@@ -130,6 +130,7 @@ Locales['fr'] = {
 
 	['admin_give_money_to'] = 'Donner de l\'argent à ',
 	['admin_tp_to'] = 'Me TP à ',
+	['admin_remove_from_veh'] = 'Enlever %s de son véhicule',
 
 	-- %s
 	['admin_you_gave_money'] = '~b~Vous avez donné: ~w~%s$ ~b~à ~w~ %s',
@@ -140,12 +141,23 @@ Locales['fr'] = {
 	['admin_superjump_desc'] = 'Activez ou désactivez le super saut',
 	['admin_stamina_desc'] = 'Activez ou désactivez la stamina infinit',
 	['admin_fastrun_desc'] = 'Activez ou désactivez le fast run',
+	
+	['admin_showplayername'] = 'Afficher Noms des Joueurs',
+	['admin_showplayername_desc'] = 'Afficher le nom et l\'id des joueurs au dessus de leur tete',
+
+	['admin_tpmarker'] = 'TP au Marker',
+	['admin_tpmarker_desc'] = 'Se téléporter au Marker',
+	['admin_showcoords'] = 'Voir les coordonnées',
+	['admin_showcoords_desc'] = 'Voir les coordonnées x,y,z de ton ped',
 
 	['admin_enabled_godmod'] = '~b~Vous avez mit le GodMod en: ~h~~w~',
 	['admin_enabled_noclip'] = '~b~Vous avez mit le GodMod en: ~h~~w~',
 	['admin_enabled_superjump'] = '~b~Vous avez mit le Super Saut en: ~h~~w~',
 	['admin_enabled_stamina'] = '~b~Vous avez mit la Stamina Infinit en: ~h~~w~',
 	['admin_enabled_fastrun'] = '~b~Vous avez mit le Fast Run en: ~h~~w~',
+
+	['admin_permban'] = 'Perma Ban ',
+	['admin_permban_reason'] = 'Quelle raison souhaite vous donner?',
  
 	------citizen Actions
 	['citizen_carry'] = 'Porter',
@@ -198,5 +210,6 @@ Locales['fr'] = {
  
 	--admin msg
 	['spectating_stop_msg'] = '~b~Vous avez arreté de spec: ~h~~w~',
-	['spectating_start_msg'] = '~b~Vous etes en train de spec: ~h~~w~'
+	['spectating_start_msg'] = '~b~Vous etes en train de spec: ~h~~w~',
+	['cant_spectate_yourself'] = '~r~Vous ne pouvez pas vous spec vous meme !'
 }

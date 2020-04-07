@@ -3,6 +3,7 @@ Config.Locale = 'fr'
 Config.NomServer = "Ton Server"
 Config.DoubleJob = true
 Config.jsfouridcard = true	
+Config.sqlban = true
 Config.Gangmenu = true
 Config.crouchkey = 36 -- 36 = LEFT CTRL https://docs.fivem.net/docs/game-references/controls/
 Config.handsupkey = 73 -- 73 = X https://docs.fivem.net/docs/game-references/controls/

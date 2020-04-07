@@ -56,7 +56,9 @@ Admin = {
     noclip = false,
     supersaut = false,
     staminainfini = false,
-    fastrun = false
+    fastrun = false,
+    showcoords = false
+    --nomtete = false
 }
 
 
@@ -196,6 +198,26 @@ function helpnotif(text)
     DisplayHelpTextFromStringLabel(0, 0, 1, -1)
 end
 
+function ShowInfo(text)
+    SetNotificationTextEntry("STRING")
+    AddTextComponentString(text)
+    DrawNotification(true, false)
+end
+
+
+function DrawTXTPOURLESPUTAINDECOORDS(text,r,z)
+    SetTextFont(0)
+    SetTextProportional(1)
+    SetTextScale(0.0,0.4)
+    SetTextDropshadow(1,0,0,0,255)
+    SetTextEdge(1,0,0,0,255)
+    SetTextDropShadow()
+    SetTextOutline()
+    SetTextEntry("STRING")
+    AddTextComponentString(text)
+    DrawText(r,z)
+ end
+
 function TouslesJoueursCO()
     local joueurs = 0
 
@@ -206,6 +228,62 @@ function TouslesJoueursCO()
     return joueurs
 end
 
+
+local function TeleportToWaypoint()-- https://gist.github.com/samyh89/32a780abcd1eea05ab32a61985857486
+    local entity = PlayerPedId()
+    if IsPedInAnyVehicle(entity, false) then
+        entity = GetVehiclePedIsUsing(entity)
+    end
+    local success = false
+    local blipFound = false
+    local blipIterator = GetBlipInfoIdIterator()
+    local blip = GetFirstBlipInfoId(8)
+    
+    while DoesBlipExist(blip) do
+        if GetBlipInfoIdType(blip) == 4 then
+            cx, cy, cz = table.unpack(Citizen.InvokeNative(0xFA7C7F0AADF25D09, blip, Citizen.ReturnResultAnyway(), Citizen.ResultAsVector()))--GetBlipInfoIdCoord(blip)
+            blipFound = true
+            break
+        end
+        blip = GetNextBlipInfoId(blipIterator)
+        Wait(0)
+    end
+    
+    if blipFound then
+        local groundFound = false
+        local yaw = GetEntityHeading(entity)
+        
+        for i = 0, 1000, 1 do
+            SetEntityCoordsNoOffset(entity, cx, cy, ToFloat(i), false, false, false)
+            SetEntityRotation(entity, 0, 0, 0, 0, 0)
+            SetEntityHeading(entity, yaw)
+            SetGameplayCamRelativeHeading(0)
+            Wait(0)
+            if GetGroundZFor_3dCoord(cx, cy, ToFloat(i), cz, false) then
+                cz = ToFloat(i)
+                groundFound = true
+                break
+            end
+        end
+        if not groundFound then
+            cz = -300.0
+        end
+        success = true
+    else
+        ShowInfo('~r~Aucun Marker trouvés')
+    end
+    
+    if success then
+        SetEntityCoordsNoOffset(entity, cx, cy, cz, false, false, true)
+        SetGameplayCamRelativeHeading(0)
+        if IsPedSittingInAnyVehicle(PlayerPedId()) then
+            if GetPedInVehicleSeat(GetVehiclePedIsUsing(PlayerPedId()), -1) == PlayerPedId() then
+                SetVehicleOnGroundProperly(GetVehiclePedIsUsing(PlayerPedId()))
+            end
+        end
+    end
+
+end
 
 function JoueurPlusProche(radius)
     local players = GetActivePlayers()
@@ -254,12 +332,12 @@ function pointer()
     end
     SetPedCurrentWeaponVisible(GetPlayerPed(-1), 0, 1, 1, 1)
     SetPedConfigFlag(GetPlayerPed(-1), 36, 1)
-    Citizen.InvokeNative(0x2D537BA194896636, GetPlayerPed(-1), "task_Player.pointer", 0.5, 0, "anim@mp_point", 24)
+    TaskMoveNetworkByName(GetPlayerPed(-1), "task_Player.pointer", 0.5, 0, "anim@mp_point", 24)
     RemoveAnimDict("anim@mp_point")
 end
 
 function stoppointer()
-    Citizen.InvokeNative(0xD01015C7316AE176, GetPlayerPed(-1), "Stop")
+    RequestTaskMoveNetworkStateTransition(GetPlayerPed(-1), "Stop")
     if not IsPedInjured(GetPlayerPed(-1)) then
         ClearPedSecondaryTask(GetPlayerPed(-1))
     end
@@ -1043,7 +1121,7 @@ function AddPersoMenu(menu)
     menuportefeuille.SubMenu.OnListSelect = function(sender, item, index)
         if item == argentsaleport or item == argentport then
             if index == 1 then -- index 1 = Donner
-                local quantite = KeyboardInput('RIZIE_TXTBOX_AMOUNT', _U('wallet_how_much_money'), '', 10) -- 10 = le maximum de nombre possible ds la txtbox
+                local quantite = KeyboardInput(_U('wallet_how_much_money'), '', 10) -- 10 = le maximum de nombre possible ds la txtbox
                 if quantite ~= nil then
                     
                     quantite = tonumber(quantite)
@@ -1076,7 +1154,7 @@ function AddPersoMenu(menu)
                     end
                 end
             elseif index == 2 then
-                local quantite = KeyboardInput('RIZIE_TXTBOX_AMOUNT', _U('wallet_how_much_money_drop'), '', 10) -- 10 = le maximum de nombre possible ds la txtbox
+                local quantite = KeyboardInput(_U('wallet_how_much_money_drop'), '', 10) -- 10 = le maximum de nombre possible ds la txtbox
                 if quantite ~= nil then
                     
                     quantite = tonumber(quantite)
@@ -1385,9 +1463,12 @@ function AddPersoMenu(menu)
                 
             local specjoueur = {}
             local kickjoueur = {}
+            local banjoueur = {}
             local revivejoueur = {}
             local donnerargentjoueur = {}
             local tpajoueur = {}
+            local enleverduvehicule = {}
+
             -----------------------MENU ADMIN/JOEURS CO
             joueurscoAdmin = _menuPool:AddSubMenu(menuadmin.SubMenu, _U('admin_playerlist'), _U('admin_playerlist_desc'))
 
@@ -1395,6 +1476,7 @@ function AddPersoMenu(menu)
                 if NetworkIsPlayerActive(i) and GetPlayerServerId(i)  ~= 0 then
                     local valuejoueur = GetPlayerServerId(i)
                     local namejoueur = GetPlayerName(i)
+                    local joueurPed = GetPlayerPed(i)
 
                     listejoueur[valuejoueur] = _menuPool:AddSubMenu(joueurscoAdmin.SubMenu, namejoueur, "")
 
@@ -1403,6 +1485,11 @@ function AddPersoMenu(menu)
 
                     kickjoueur[valuejoueur] = NativeUI.CreateItem("Kick " .. namejoueur, "")
                     listejoueur[valuejoueur].SubMenu:AddItem(kickjoueur[valuejoueur])
+
+                    if Config.sqlban then
+                        banjoueur[valuejoueur] = NativeUI.CreateItem(_U('admin_permban') .. namejoueur, "")
+                        listejoueur[valuejoueur].SubMenu:AddItem(banjoueur[valuejoueur])
+                    end
 
                     revivejoueur[valuejoueur] = NativeUI.CreateItem("Revive " .. namejoueur, "")
                     listejoueur[valuejoueur].SubMenu:AddItem(revivejoueur[valuejoueur])
@@ -1413,6 +1500,9 @@ function AddPersoMenu(menu)
                     tpajoueur[valuejoueur] = NativeUI.CreateItem(_U('admin_tp_to') .. namejoueur, "")
                     listejoueur[valuejoueur].SubMenu:AddItem(tpajoueur[valuejoueur])
 
+                    enleverduvehicule[valuejoueur] = NativeUI.CreateItem(_U('admin_remove_from_veh', namejoueur), "")
+                    listejoueur[valuejoueur].SubMenu:AddItem(enleverduvehicule[valuejoueur])
+
                     listejoueur[valuejoueur].SubMenu.OnItemSelect = function(sender, item)
                         if item == kickjoueur[valuejoueur] then
                             TriggerServerEvent('RiZiePersoMenu:kickjoueur', valuejoueur)
@@ -1420,18 +1510,34 @@ function AddPersoMenu(menu)
                         elseif item == revivejoueur[valuejoueur] then
                             TriggerServerEvent('esx_ambulancejob:revive', valuejoueur)
                         elseif item == donnerargentjoueur[valuejoueur] then
-                            local quantite = KeyboardInput('RIZIE_TXTBOX_AMOUNT', _U('wallet_how_much_money_give'), '', 10) -- 10 = le maximum de nombre possible ds la txtbox
+                            local quantite = KeyboardInput(_U('wallet_how_much_money_give'), '', 10) -- 10 = le maximum de nombre possible ds la txtbox
                             TriggerServerEvent('RiZiePersoMenu:donnerargent', quantite, valuejoueur)
                             ESX.ShowNotification(_U('admin_you_gave_money', tostring(quantite), namejoueur))
                         elseif item == tpajoueur[valuejoueur] then
                             SetEntityCoords(PlayerPedId(), GetEntityCoords(GetPlayerPed(GetPlayerFromServerId(valuejoueur))))
                             ESX.ShowNotification(_U('admin_you_teleported_urself_to', namejoueur))
+                        elseif item == enleverduvehicule[valuejoueur] then
+                            if IsPedInAnyVehicle(joueurPed, false) then
+                                ClearPedTasksImmediately(joueurPed)
+                            end
+                        elseif item == banjoueur[valuejoueur] then
+                            -- admin_ban_reason
+                            local raison = KeyboardInput(_U('admin_permban_reason'), '', 500)    
+                            if raison ~= "" then
+                                _menuPool:CloseAllMenus()
+                                TriggerServerEvent("BanSql:ICheat", raison,valuejoueur)
+                            end                   
                         end
                     end
 
                     listejoueur[valuejoueur].SubMenu.OnCheckboxChange = function(sender, item, checked_)
                         if item == specjoueur[valuejoueur] then
-                            SpecJoueur(i)
+                            if namejoueur == GetPlayerName(source) then
+                                ShowInfo(_U('cant_spectate_yourself'))
+                                _menuPool:CloseAllMenus()
+                            else
+                                SpecJoueur(i)
+                            end
                         end
                     end
                 end
@@ -1456,8 +1562,22 @@ function AddPersoMenu(menu)
             local fastrunstaff = NativeUI.CreateCheckboxItem("Fast Run", Admin.fastrun, _U('admin_fastrun_desc'))
             menuadmin.SubMenu:AddItem(fastrunstaff)
 
+            local nomtetestaff = NativeUI.CreateCheckboxItem(_U('admin_showplayername'), Admin.nomtete, _U('admin_showplayername_desc'))
+            menuadmin.SubMenu:AddItem(nomtetestaff)
 
+            local showcoords = NativeUI.CreateCheckboxItem(_U('admin_showcoords'), Admin.showcoords, _U('admin_showcoords_desc'))
+            menuadmin.SubMenu:AddItem(showcoords)
 
+            local tpmarker = NativeUI.CreateItem(_U('admin_tpmarker'), _U('admin_tpmarker_desc'))
+            menuadmin.SubMenu:AddItem(tpmarker)
+
+            menuadmin.SubMenu.OnItemSelect = function(sender, item)
+                if item == tpmarker then
+                    TeleportToWaypoint()
+                end
+            end
+
+            local tags = {}
             menuadmin.SubMenu.OnCheckboxChange = function(sender, item, checked_)
                 if item == godmodstaff then
                     Admin.godmod = not Admin.godmod
@@ -1483,6 +1603,17 @@ function AddPersoMenu(menu)
                 elseif item == fastrunstaff then
                     Admin.fastrun = not Admin.fastrun
                     ESX.ShowNotification(_U('admin_enabled_fastrun') .. tostring(Admin.fastrun))
+                elseif item == nomtetestaff then
+                    Admin.nomtete = not Admin.nomtete
+                    for _, i in ipairs(GetActivePlayers()) do
+                        if GetPlayerPed(i) ~= PlayerPedId() then
+                            tags[i] = CreateFakeMpGamerTag(GetPlayerPed(i), GetPlayerServerId(i) .. " - " .. GetPlayerName(i), 0, 0, "", 0)
+                            SetMpGamerTagVisibility(tags[i], 0, Admin.nomtete)
+                            SetMpGamerTagVisibility(tags[i], 2, Admin.nomtete)
+                        end
+                    end
+                elseif item == showcoords then
+                    Admin.showcoords = not Admin.showcoords
                 end
             end
         end
@@ -1967,6 +2098,17 @@ Citizen.CreateThread(function()
         if Admin.fastrun then
             SetRunSprintMultiplierForPlayer(PlayerId(-1), 2.49) SetPedMoveRateOverride(GetPlayerPed(-1), 2.15)
         end
+        if Admin.showcoords then
+            x,y,z = table.unpack(GetEntityCoords(GetPlayerPed(-1),true))
+            roundx=tonumber(string.format("%.2f",x))
+            roundy=tonumber(string.format("%.2f",y))
+            roundz=tonumber(string.format("%.2f",z))
+            DrawTXTPOURLESPUTAINDECOORDS("~r~X:~s~ "..roundx,0.05,0.00)
+            DrawTXTPOURLESPUTAINDECOORDS("~r~Y:~s~ "..roundy,0.11,0.00)
+            DrawTXTPOURLESPUTAINDECOORDS("~r~Z:~s~ "..roundz,0.17,0.00)
+        end
         Citizen.Wait(0)
     end
 end)
+
+
