@@ -63,11 +63,16 @@
             - Revive the player (using esx_ambulancejob)
             - Give money to the player
             - TP ourself to the player
+            - Ban player (only if sqlban enabled into the config)
+            - Remove player from vehicle
     - Godmod
     - Noclip
     - Super Jump
     - Infinite Stamina
     - Fast Run
+    - TP to Markr
+    - Show coords
+    - Show players names and ID
 - Config file:
     - Fully customizable config file
     
