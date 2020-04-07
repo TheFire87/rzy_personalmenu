@@ -57,8 +57,8 @@ Admin = {
     supersaut = false,
     staminainfini = false,
     fastrun = false,
-    showcoords = false
-    --nomtete = false
+    showcoords = false,
+    nomtete = false
 }
 
 
