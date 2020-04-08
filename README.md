@@ -53,6 +53,12 @@
         - Save ped
     - Infos:
         - See how much peoples are online, how much EMS, LSPD, mechanic and cardealer are online's too
+    - Views:
+        - Normal view
+        - Improved view & lights
+        - Amplified colors
+        - Black and white view
+        - FPS optimization
 - Admin:
     - Players connected list:
         - For each players you can:
@@ -80,6 +86,8 @@
     - Démarches
 - Snikrs for:
     - M'a gentilment aidé à réglé 2-3 trucs
+- A.D.E.M.O for:
+    - FPS optimization
 
 ### Requirements
 This order also applies in the startup order.
