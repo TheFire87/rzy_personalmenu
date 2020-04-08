@@ -8,8 +8,6 @@
 
 **If you need any support, everything will be here: [click](https://discord.gg/uCxuWwN)**
 
-**Please, KEEP IN MIND i've done this to train myself in Lua. Cuse tbh if I had in idea to release it only, it would be dumb cuse krz_personalmenu do the same job.**
-
 ### Links & Support
 - **Discord Username**: RZY#2004
 
