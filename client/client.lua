@@ -1409,7 +1409,7 @@ function AddPersoMenu(menu)
         elseif item == optimiserfps then
             -- Thanks to A.D.E.M.O for this one
             DoScreenFadeIn(2000)
-            LoadingPrompt("Optimisation en cours...", 3)
+            Text("Optimisation en cours...", 3)
             DoScreenFadeOut(2000)
             Citizen.Wait(2000)
             DoScreenFadeIn(1500)
@@ -1434,8 +1434,6 @@ function AddPersoMenu(menu)
             ClearThisPrint()
             
             Citizen.Wait(2090)
-            RemoveLoadingPrompt()
-            Citizen.Wait(100)
             PlaySoundFrontend(-1, "Hack_Success", "DLC_HEIST_BIOLAB_PREP_HACKING_SOUNDS", true)
         end
     end
