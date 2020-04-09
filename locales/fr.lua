@@ -30,6 +30,16 @@ Locales['fr'] = {
 	['inventory_cantuseitem'] = 'Cet item n\'est pas utilisable !',
 
 
+	['info_menu'] = 'Infos',
+	['view_menu'] = 'Vu',
+
+
+	--------view menu
+	['normal-view'] = 'Normal',
+	['view_light'] = 'Vue & lumières améliorées',
+	['amplified_colors'] = 'Couleurs amplifiées',
+	['blackandwhite_view'] = 'Vu Noir & Blanc',
+	['optimization_fps'] = 'Optimisation',
 
 	--wallet
 	['wallet_job'] = 'Métier: %s - %s',
