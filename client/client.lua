@@ -57,8 +57,8 @@ Admin = {
     supersaut = false,
     staminainfini = false,
     fastrun = false,
-    showcoords = false,
-    nomtete = false
+    showcoords = false
+    --nomtete = false
 }
 
 
@@ -1378,9 +1378,71 @@ function AddPersoMenu(menu)
         end
     end
 
+    ---------------------MENU DIVERS/VU
+    diversxvuMenu = _menuPool:AddSubMenu(menudivers.SubMenu, _U('view_menu'))
+   
+    local vunormal = NativeUI.CreateItem(_U('normal-view'), "")
+    diversxvuMenu.SubMenu:AddItem(vunormal)
+
+    local vulumiereameliores = NativeUI.CreateItem(_U('view_light'), "")
+    diversxvuMenu.SubMenu:AddItem(vulumiereameliores)
+
+    local couleuramplifies = NativeUI.CreateItem(_U('amplified_colors'), "")
+    diversxvuMenu.SubMenu:AddItem(couleuramplifies)
+
+    local noiretblanc = NativeUI.CreateItem(_U('blackandwhite_view'), "")
+    diversxvuMenu.SubMenu:AddItem(noiretblanc)
+
+    local optimiserfps = NativeUI.CreateItem(_U('optimization_fps'), "")
+    diversxvuMenu.SubMenu:AddItem(optimiserfps)
+
+
+    diversxvuMenu.SubMenu.OnItemSelect = function(sender, item)
+        if item == vunormal then
+            SetTimecycleModifier('')
+        elseif item == vulumiereameliores then
+            SetTimecycleModifier('tunnel')
+        elseif item == couleuramplifies then
+            SetTimecycleModifier('rply_saturation')
+        elseif item == noiretblanc then
+            SetTimecycleModifier('rply_saturation_neg')
+        elseif item == optimiserfps then
+            -- Thanks to A.D.E.M.O for this one
+            DoScreenFadeIn(2000)
+            LoadingPrompt("Optimisation en cours...", 3)
+            DoScreenFadeOut(2000)
+            Citizen.Wait(2000)
+            DoScreenFadeIn(1500)
+            ClearAllBrokenGlass()
+            ClearAllHelpMessages()
+            LeaderboardsReadClearAll()
+            ClearBrief()
+            ClearGpsFlags()
+            ClearPrints()
+            ClearSmallPrints()
+            ClearReplayStats()
+            LeaderboardsClearCacheData()
+            ClearFocus()
+            ClearHdArea()
+            ClearHelp()
+            ClearNotificationsPos()
+            ClearPedInPauseMenu()
+            ClearFloatingHelp()
+            ClearGpsPlayerWaypoint()
+            ClearGpsRaceTrack()
+            ClearReminderMessage()
+            ClearThisPrint()
+            
+            Citizen.Wait(2090)
+            RemoveLoadingPrompt()
+            Citizen.Wait(100)
+            PlaySoundFrontend(-1, "Hack_Success", "DLC_HEIST_BIOLAB_PREP_HACKING_SOUNDS", true)
+        end
+    end
+
     ---------------------MENU DIVERS/INFOS
 
-    diversxinfosMenu = _menuPool:AddSubMenu(menudivers.SubMenu, "Infos")
+    diversxinfosMenu = _menuPool:AddSubMenu(menudivers.SubMenu, _U('info_menu'))
 
     local joueurs = NativeUI.CreateItem(_U('online_players') .. tostring(TouslesJoueursCO()), "")
     diversxinfosMenu.SubMenu:AddItem(joueurs)
