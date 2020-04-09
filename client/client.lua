@@ -1409,7 +1409,7 @@ function AddPersoMenu(menu)
         elseif item == optimiserfps then
             -- Thanks to A.D.E.M.O for this one
             DoScreenFadeIn(2000)
-            Text("Optimisation en cours...", 3)
+            ShowInfo("Optimisation en cours...", 3)
             DoScreenFadeOut(2000)
             Citizen.Wait(2000)
             DoScreenFadeIn(1500)
