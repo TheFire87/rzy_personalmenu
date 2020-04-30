@@ -141,6 +141,7 @@ Locales['fr'] = {
 	['admin_give_money_to'] = 'Donner de l\'argent à ',
 	['admin_tp_to'] = 'Me TP à ',
 	['admin_remove_from_veh'] = 'Enlever %s de son véhicule',
+	['clone_veh'] = 'Cloner le véhicule de %s',
 
 	-- %s
 	['admin_you_gave_money'] = '~b~Vous avez donné: ~w~%s$ ~b~à ~w~ %s',
@@ -159,6 +160,15 @@ Locales['fr'] = {
 	['admin_tpmarker_desc'] = 'Se téléporter au Marker',
 	['admin_showcoords'] = 'Voir les coordonnées',
 	['admin_showcoords_desc'] = 'Voir les coordonnées x,y,z de ton ped',
+	['admin_fullboost'] = 'Booster Véhicule',
+	['admin_fullboost_desc'] = 'Custom votre véhicule au max',
+	['admin_changeveh_plate'] = 'Changer plaque d\'immatriculation',
+	['admin_changeveh_plate_desc'] = 'Changez votre plaque d\'immatriculation par ce que vous souhaitez.',
+	['admin_changeveh_plate_text'] = 'Par quoi souhaitez vous changer votre plaque?',
+	['admin_fixveh'] = 'Réparer véhicule',
+	['admin_fixveh_desc'] = 'Vous permet de réparer votre véhicule si celui ci est endommagé',
+	['admin_showcustomcrosshair'] = 'Activer Custom Crosshair',
+	['admin_showcustomcrosshair_desc'] = 'Affiche un crosshair rouge custom',
 
 	['admin_enabled_godmod'] = '~b~Vous avez mit le GodMod en: ~h~~w~',
 	['admin_enabled_noclip'] = '~b~Vous avez mit le GodMod en: ~h~~w~',

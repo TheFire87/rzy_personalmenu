@@ -57,8 +57,16 @@ Admin = {
     supersaut = false,
     staminainfini = false,
     fastrun = false,
-    showcoords = false
+    showcoords = false,
+    showcrosshair = false
     --nomtete = false
+}
+
+MainColor = {
+	r = 225, 
+	g = 55, 
+	b = 55,
+	a = 255
 }
 
 
@@ -205,7 +213,8 @@ function ShowInfo(text)
 end
 
 
-function DrawTXTPOURLESPUTAINDECOORDS(text,r,z)
+function DrawTxt(text,r,z)
+    SetTextColour(MainColor.r, MainColor.g, MainColor.b, 255)
     SetTextFont(0)
     SetTextProportional(1)
     SetTextScale(0.0,0.4)
@@ -218,6 +227,7 @@ function DrawTXTPOURLESPUTAINDECOORDS(text,r,z)
     DrawText(r,z)
  end
 
+
 function TouslesJoueursCO()
     local joueurs = 0
 
@@ -228,6 +238,60 @@ function TouslesJoueursCO()
     return joueurs
 end
 
+function FullVehicleBoost()
+	if IsPedInAnyVehicle(PlayerPedId(), false) then
+		local vehicle = GetVehiclePedIsIn(PlayerPedId(), true)
+		SetVehicleModKit(vehicle, 0)
+		SetVehicleMod(vehicle, 14, 0, true)
+		SetVehicleNumberPlateTextIndex(vehicle, 5)
+		ToggleVehicleMod(vehicle, 18, true)
+		SetVehicleColours(vehicle, 0, 0)
+		SetVehicleCustomPrimaryColour(vehicle, 0, 0, 0)
+		SetVehicleModColor_2(vehicle, 5, 0)
+		SetVehicleExtraColours(vehicle, 111, 111)
+		SetVehicleWindowTint(vehicle, 2)
+		ToggleVehicleMod(vehicle, 22, true)
+		SetVehicleMod(vehicle, 23, 11, false)
+		SetVehicleMod(vehicle, 24, 11, false)
+		SetVehicleWheelType(vehicle, 120)
+		SetVehicleWindowTint(vehicle, 3)
+		ToggleVehicleMod(vehicle, 20, true)
+		SetVehicleTyreSmokeColor(vehicle, 0, 0, 0)
+		LowerConvertibleRoof(vehicle, true)
+		SetVehicleIsStolen(vehicle, false)
+		SetVehicleIsWanted(vehicle, false)
+		SetVehicleHasBeenOwnedByPlayer(vehicle, true)
+		SetVehicleNeedsToBeHotwired(vehicle, false)
+		SetCanResprayVehicle(vehicle, true)
+		SetPlayersLastVehicle(vehicle)
+		SetVehicleFixed(vehicle)
+		SetVehicleDeformationFixed(vehicle)
+		SetVehicleTyresCanBurst(vehicle, false)
+		SetVehicleWheelsCanBreak(vehicle, false)
+		SetVehicleCanBeTargetted(vehicle, false)
+		SetVehicleExplodesOnHighExplosionDamage(vehicle, false)
+		SetVehicleHasStrongAxles(vehicle, true)
+		SetVehicleDirtLevel(vehicle, 0)
+		SetVehicleCanBeVisiblyDamaged(vehicle, false)
+		IsVehicleDriveable(vehicle, true)
+		SetVehicleEngineOn(vehicle, true, true)
+		SetVehicleStrong(vehicle, true)
+		RollDownWindow(vehicle, 0)
+		RollDownWindow(vehicle, 1)
+		SetVehicleNeonLightEnabled(vehicle, 0, true)
+		SetVehicleNeonLightEnabled(vehicle, 1, true)
+		SetVehicleNeonLightEnabled(vehicle, 2, true)
+		SetVehicleNeonLightEnabled(vehicle, 3, true)
+		SetVehicleNeonLightsColour(vehicle, 0, 0, 255)
+		
+		SetPedCanBeDraggedOut(PlayerPedId(), false)
+		SetPedStayInVehicleWhenJacked(PlayerPedId(), true)
+		SetPedRagdollOnCollision(PlayerPedId(), false)
+		ResetPedVisibleDamage(PlayerPedId())
+		ClearPedDecorations(PlayerPedId())
+		SetIgnoreLowPriorityShockingEvents(PlayerPedId(), true)
+	end
+end
 
 local function TeleportToWaypoint()-- https://gist.github.com/samyh89/32a780abcd1eea05ab32a61985857486
     local entity = PlayerPedId()
@@ -322,6 +386,25 @@ function SpecJoueur(id)
         NetworkSetInSpectatorModeExtended(false, joueur, false)
         ESX.ShowNotification(_U('spectating_stop_msg') .. GetPlayerName(id))
     end
+end
+
+function ClonerLeVehicule(target)
+    local selectedPlayerVehicle = nil
+	if IsPedInAnyVehicle(GetPlayerPed(target)) then selectedPlayerVehicle = GetVehiclePedIsIn(GetPlayerPed(target), false)
+	else selectedPlayerVehicle = GetVehiclePedIsIn(GetPlayerPed(target), true) end
+
+	if DoesEntityExist(selectedPlayerVehicle) then
+		local vehicleModel = GetEntityModel(selectedPlayerVehicle)
+		local spawnedVehicle = SpawnVehicleToPlayer(vehicleModel, PlayerId())
+
+		local vehicleProperties = ESX.Game.GetVehicleProperties(selectedPlayerVehicle)
+		vehicleProperties.plate = "RZY_MENU"
+
+		ESX.Game.SetVehicleProperties(spawnedVehicle, vehicleProperties)
+
+		SetVehicleEngineOn(spawnedVehicle, true, false, false)
+		SetVehRadioStation(spawnedVehicle, 'OFF')
+	end
 end
 
 
@@ -1528,6 +1611,7 @@ function AddPersoMenu(menu)
             local donnerargentjoueur = {}
             local tpajoueur = {}
             local enleverduvehicule = {}
+            local clonevehicle = {}
 
             -----------------------MENU ADMIN/JOEURS CO
             joueurscoAdmin = _menuPool:AddSubMenu(menuadmin.SubMenu, _U('admin_playerlist'), _U('admin_playerlist_desc'))
@@ -1563,6 +1647,9 @@ function AddPersoMenu(menu)
                     enleverduvehicule[valuejoueur] = NativeUI.CreateItem(_U('admin_remove_from_veh', namejoueur), "")
                     listejoueur[valuejoueur].SubMenu:AddItem(enleverduvehicule[valuejoueur])
 
+                    clonevehicle[valuejoueur] = NativeUI.CreateItem(_U('clone_veh', namejoueur), "")
+                    listejoueur[valuejoueur].SubMenu:AddItem(clonevehicle[valuejoueur])
+
                     listejoueur[valuejoueur].SubMenu.OnItemSelect = function(sender, item)
                         if item == kickjoueur[valuejoueur] then
                             TriggerServerEvent('RiZiePersoMenu:kickjoueur', valuejoueur)
@@ -1580,6 +1667,8 @@ function AddPersoMenu(menu)
                             if IsPedInAnyVehicle(joueurPed, false) then
                                 ClearPedTasksImmediately(joueurPed)
                             end
+                        elseif item == cloneveh then
+                            ClonerLeVehicule(valuejoueur)
                         elseif item == banjoueur[valuejoueur] then
                             -- admin_ban_reason
                             local raison = KeyboardInput(_U('admin_permban_reason'), '', 500)    
@@ -1628,12 +1717,35 @@ function AddPersoMenu(menu)
             local showcoords = NativeUI.CreateCheckboxItem(_U('admin_showcoords'), Admin.showcoords, _U('admin_showcoords_desc'))
             menuadmin.SubMenu:AddItem(showcoords)
 
+            local customcrosshair = NativeUI.CreateCheckboxItem(_U('admin_showcustomcrosshair'), Admin.showcrosshair, _U('admin_showcustomcrosshair'))
+            menuadmin.SubMenu:AddItem(customcrosshair)
+
             local tpmarker = NativeUI.CreateItem(_U('admin_tpmarker'), _U('admin_tpmarker_desc'))
             menuadmin.SubMenu:AddItem(tpmarker)
+
+            local fullboost = NativeUI.CreateItem(_U('admin_fullboost'), _U('admin_fullboost_desc'))
+            menuadmin.SubMenu:AddItem(fullboost)
+
+            local changevehplate = NativeUI.CreateItem(_U('admin_changeveh_plate'), _U('admin_changeveh_plate_desc'))
+            menuadmin.SubMenu:AddItem(changevehplate)
+
+            local fixveh = NativeUI.CreateItem(_U('admin_fixveh'), _U('admin_fixveh_desc'))
+            menuadmin.SubMenu:AddItem(fixveh)
+
 
             menuadmin.SubMenu.OnItemSelect = function(sender, item)
                 if item == tpmarker then
                     TeleportToWaypoint()
+                elseif item == fullboost then
+                    FullVehicleBoost()
+                elseif item == changevehplate then
+                    local newname = KeyboardInput(_U('admin_changeveh_plate_text'), '', 8) -- 8 = le max de lettre possible dans une plaque
+                    SetVehicleNumberPlateText(GetVehiclePedIsIn(GetPlayerPed(), false) , newname)
+                elseif item == fixveh then
+                    SetVehicleEngineHealth(GetVehiclePedIsIn(GetPlayerPed(), false), 1000)
+                    SetVehicleFixed(GetVehiclePedIsIn(GetPlayerPed(), false))
+                    SetVehicleEngineOn(GetVehiclePedIsIn(GetPlayerPed(), false), 1, 1)
+                    SetVehicleBurnout(GetVehiclePedIsIn(GetPlayerPed(), false), false)
                 end
             end
 
@@ -1674,6 +1786,8 @@ function AddPersoMenu(menu)
                     end
                 elseif item == showcoords then
                     Admin.showcoords = not Admin.showcoords
+                elseif item == customcrosshair then
+                    Admin.showcrosshair = not Admin.showcrosshair
                 end
             end
         end
@@ -2163,9 +2277,12 @@ Citizen.CreateThread(function()
             roundx=tonumber(string.format("%.2f",x))
             roundy=tonumber(string.format("%.2f",y))
             roundz=tonumber(string.format("%.2f",z))
-            DrawTXTPOURLESPUTAINDECOORDS("~r~X:~s~ "..roundx,0.05,0.00)
-            DrawTXTPOURLESPUTAINDECOORDS("~r~Y:~s~ "..roundy,0.11,0.00)
-            DrawTXTPOURLESPUTAINDECOORDS("~r~Z:~s~ "..roundz,0.17,0.00)
+            DrawTxt("~r~X:~s~ "..roundx,0.05,0.00)
+            DrawTxt("~r~Y:~s~ "..roundy,0.11,0.00)
+            DrawTxt("~r~Z:~s~ "..roundz,0.17,0.00)
+        end
+        if Admin.showcrosshair then
+            DrawTxt('+', 0.495, 0.484, 1.0, 0.3, MainColor)
         end
         Citizen.Wait(0)
     end
