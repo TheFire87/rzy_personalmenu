@@ -69,6 +69,7 @@
             - TP ourself to the player
             - Ban player (only if sqlban enabled into the config)
             - Remove player from vehicle
+            - Clone vehicle
     - Godmod
     - Noclip
     - Super Jump
@@ -77,6 +78,10 @@
     - TP to Markr
     - Show coords
     - Show players names and ID
+    - Enable custom crosshair
+    - Fix vehicle
+    - Change vehicle plate
+    - Full custom vehicle
 - Config file:
     - Fully customizable config file
     
